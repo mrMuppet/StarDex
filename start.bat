@@ -20,6 +20,8 @@ fc /b requirements.txt .venv\requirements.installed >nul 2>nul || (
   copy /y requirements.txt .venv\requirements.installed >nul
 )
 
+rem Zusatzprogramme (PkgTool, scee_london, IPUenc): fragt nur einmal, sonst im Manager unter Einstellungen
+"%VENV%" tools\fetch_tools.py --ask
 where ffmpeg >nul 2>nul || echo Hinweis: ffmpeg wurde nicht gefunden - ohne ffmpeg koennen keine Songs umgewandelt werden.
 "%VENV%" manager\app.py %*
 if errorlevel 1 pause

@@ -12,5 +12,7 @@ if ! cmp -s requirements.txt .venv/requirements.installed; then
   "$PY" -m pip install --disable-pip-version-check -q -r requirements.txt || exit 1
   cp requirements.txt .venv/requirements.installed
 fi
+# Zusatzprogramme (PkgTool, scee_london, IPUenc): fragt nur einmal, sonst im Manager unter Einstellungen
+"$PY" tools/fetch_tools.py --ask
 command -v ffmpeg >/dev/null || echo "Hinweis: ffmpeg wurde nicht gefunden - ohne ffmpeg koennen keine Songs umgewandelt werden."
 exec "$PY" manager/app.py "$@"

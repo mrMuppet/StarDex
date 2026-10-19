@@ -13,7 +13,17 @@ const EN = {
   'Häkchen bei Songs mit gemerktem USDB-Eintrag; geladen wird nacheinander in einem Auftrag.': 'Tick songs with a remembered USDB entry; they are downloaded one after the other in one task.',
   'wartet auf die laufende USDB-Aufgabe …': 'waiting for the running USDB task …', 'Vorgemerkt': 'Queued', 'Vorgemerkte übertragen': 'Transfer queued songs', 'Goldene Noten': 'Golden notes', 'Bewertung': 'Rating', 'Aufrufe': 'Views', 'Bibliothek': 'Library', 'vorhanden': 'present', 'Jahr': 'Year', 'danach auf:': 'then to:', '(Disc-Pack)': '(disc pack)', 'GAP speichern': 'Save GAP',
   '– der Regler steht immer auf dem gespeicherten Wert. Text zu früh → Regler nach rechts. Zum Probehören verschieben, dann „GAP speichern“.': '– the slider always starts at the saved value. Lyrics too early → move right. Move it to listen, then “Save GAP”.',
-  'Gespeichert:': 'Saved:', 'Gesangstrennung': 'Vocal separation',
+  'Gespeichert:': 'Saved:',
+  'Zusatzprogramme': 'Additional programs', 'Fehlende herunterladen': 'Download missing',
+  'Nur nötig für die jeweilige Funktion. PkgTool, scee_london und IPUenc lädt StarDex selbst von GitHub (feste Version, Prüfsumme geprüft); den Rest bitte selbst installieren.':
+    'Only needed for the respective feature. StarDex downloads PkgTool, scee_london and IPUenc itself from GitHub (pinned version, checksum verified); please install the rest yourself.',
+  'Zusatzprogramme herunterladen': 'Download additional programs', 'Zusatzprogramme geladen': 'Additional programs downloaded', 'Alles schon vorhanden': 'Everything already there',
+  'PS3-Discs einlesen': 'Import PS3 discs', 'PS2-Discs einlesen': 'Import PS2 discs',
+  'für PkgTool (PS4-Pakete)': 'for PkgTool (PS4 packages)', 'Songs umwandeln': 'Convert songs', 'Disc-Abbilder einlesen': 'Import disc images',
+  'installieren: https://dotnet.microsoft.com/download (z. B. .NET 8)': 'install: https://dotnet.microsoft.com/download (e.g. .NET 8)',
+  'installieren und in den PATH: https://ffmpeg.org (Windows: winget install ffmpeg)': 'install and add to PATH: https://ffmpeg.org (Windows: winget install ffmpeg)',
+  'installieren: https://www.7-zip.org': 'install: https://www.7-zip.org',
+ 'Gesangstrennung': 'Vocal separation',
   'Für die Stimmreduzierung im Spiel (ADRS) wird beim Umwandeln die Stimme vom Playback getrennt (Demucs, je Song mehrere Minuten). PS2-Discs mit eigener Gesangsspur brauchen dafür keine Trennung. Gilt für neue PS4-Pakete und PS3-Fassungen; fertige Pakete bleiben, wie sie sind.':
     'For the in-game vocal reduction (ADRS) the voice is separated from the backing track during conversion (Demucs, several minutes per song). PS2 discs with their own vocal track need no separation. Applies to new PS4 packages and PS3 versions; finished packages stay as they are.',
   'an (Stimmreduzierung für alle Songs, langsam)': 'on (vocal reduction for all songs, slow)',

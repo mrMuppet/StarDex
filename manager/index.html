@@ -184,6 +184,10 @@ pre.log{max-height:340px;overflow:auto;background:var(--nobg);padding:10px;borde
   <p class="mute" style="font-size:12px;margin:2px 0 6px">An: schneller beim erneuten Übertragen, braucht Speicherplatz. Aus: nach dem Übertragen auf die PS3 wieder löschen und bei Bedarf neu erzeugen.</p>
   <div class="form"><label>Ordner</label><input id="s3dir"></div>
   <p class="mute" style="font-size:12px" id="s3use"></p>
+  <h3>Zusatzprogramme</h3>
+  <p class="mute" style="font-size:12px;margin-top:0">Nur nötig für die jeweilige Funktion. PkgTool, scee_london und IPUenc lädt StarDex selbst von GitHub (feste Version, Prüfsumme geprüft); den Rest bitte selbst installieren.</p>
+  <div id="stools"></div>
+  <p class="row"><button class="small" id="stfetch" hidden>Fehlende herunterladen</button></p>
   <p class="mute" style="font-size:12px">Die USDB-Zugangsdaten bleiben lokal in <code>manager/data/secrets.json</code> und werden nur an usdb.animux.de geschickt.</p>
   <p class="err" id="serr"></p>
   <p style="text-align:right"><button onclick="settings.close()">Abbrechen</button> <button class="primary" id="ssave">Speichern</button></p>
@@ -700,7 +704,15 @@ $('#setbtn').onclick=async()=>{const s=await api('/api/settings');
   document.querySelectorAll('[data-path]').forEach(i=>i.value=s.paths[i.dataset.path]||'');
   $('#spkg').textContent='PS4-Pakete liegen jetzt in '+s.paths.pkg_root+'. Laufwerk C: ist fast voll – z. B. D:/SingStar/Pakete wählen.';
   $('#slang').value=s.lang||'de';$('#sun').value=s.usdb_user;$('#s3keep').checked=s.ps3_keep;$('#s3dir').value=s.ps3_dir;
-  $('#s3use').textContent=`Gespeichert: ${s.ps3_usage.songs} Songs, ${gb(s.ps3_usage.bytes)}`;$('#sup').value='';$('#sup').placeholder=s.usdb_pass_set?'gespeichert – leer lassen = unverändert':'Passwort';settings.showModal()};
+  $('#s3use').textContent=`Gespeichert: ${s.ps3_usage.songs} Songs, ${gb(s.ps3_usage.bytes)}`;$('#sup').value='';$('#sup').placeholder=s.usdb_pass_set?'gespeichert – leer lassen = unverändert':'Passwort';settings.showModal();renderTools()};
+async function renderTools(){const t=await api('/api/tools');if(t.ok===false){$('#stools').innerHTML=`<p class="err">${esc(t.error)}</p>`;return}
+  $('#stools').innerHTML=`<table class="charts"><tbody>${t.map(x=>`<tr><td>${x.ok?'✓':'<span class="err">fehlt</span>'}</td><td><b>${esc(x.name)}</b></td><td>${esc(x.what)}${x.ok?'':`<br><small class="mute">${esc(x.hint)}</small>`}</td></tr>`).join('')}</tbody></table>`;
+  $('#stfetch').hidden=!t.some(x=>x.auto&&!x.ok)}
+$('#stfetch').onclick=async()=>{const b=$('#stfetch');b.disabled=true;b.textContent='lädt …';
+  const r=await api('/api/tools/fetch',{method:'POST'});
+  if(r.ok){watch(r.job);let j;do{await new Promise(f=>setTimeout(f,1000));j=await api('/api/jobs/'+r.job)}while(j&&!j.finished&&j.ok!==false);
+    if(j?.errors?.length)$('#serr').textContent=j.errors.join(' · ')}else $('#serr').textContent=r.error;
+  b.disabled=false;b.textContent='Fehlende herunterladen';renderTools()};
 $('#ssave').onclick=async()=>{readSetCons();const r=await api('/api/settings',{method:'POST',body:{consoles:setCons,disc_crf:$('#sdcrf').value,adrs:$('#sadrs').value,usdb_user:$('#sun').value,usdb_pass:$('#sup').value,ps3_keep:$('#s3keep').checked,ps3_dir:$('#s3dir').value,
    lang:$('#slang').value,paths:Object.fromEntries([...document.querySelectorAll('[data-path]')].map(i=>[i.dataset.path,i.value])),move_pkgs:$('#smove').checked}});
   if(r.ok===false){$('#serr').textContent=r.error;return}

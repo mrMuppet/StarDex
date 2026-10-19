@@ -6,9 +6,10 @@
    - [Python](https://www.python.org) 3.10 oder neuer (unter Windows beim Installieren „Add python.exe to PATH“
      anhaken)
    - [ffmpeg](https://ffmpeg.org) im PATH (unter Windows z. B. `winget install ffmpeg`)
-   - nur für die PS4 zusätzlich die [.NET-Runtime](https://dotnet.microsoft.com/download) und PkgTool (siehe unten)
+   - nur für die PS4 zusätzlich die [.NET-Runtime](https://dotnet.microsoft.com/download) (z. B. .NET 8)
 2. **Starten:** `start.bat` doppelklicken (Linux/macOS: `./start.sh`). Beim ersten Start wird die Python-Umgebung
-   eingerichtet; danach öffnet sich der Manager im Browser unter http://127.0.0.1:5077.
+   eingerichtet und einmal gefragt, ob PkgTool, scee_london und IPUenc heruntergeladen werden sollen (siehe
+   [Zusatzprogramme](#zusatzprogramme)); danach öffnet sich der Manager im Browser unter http://127.0.0.1:5077.
 3. **Im Manager einrichten:** unter **Einstellungen** die Konsolen (Typ, IP) und die Speicherorte eintragen. Eigene
    UltraStar-Songs kommen in den Ordner „UltraStar-Songs“ – standardmäßig `songs/ultrastar` im Projektordner.
 
@@ -41,17 +42,29 @@ Empfohlen ist die PS3 (SingStar läuft dort flüssiger, Übertragung ohne Pakete
 
 ## Zusatzprogramme
 
-Nicht im Repository enthalten; nur nötig, wenn man die jeweilige Funktion nutzt:
+Nicht im Repository enthalten; nur nötig, wenn man die jeweilige Funktion nutzt.
+
+**PkgTool, scee_london und IPUenc lädt StarDex selbst herunter** – von den offiziellen GitHub-Releases, in fester
+Version und mit geprüfter SHA-256-Prüfsumme; die Lizenzdateien liegen danach neben den Programmen.
+Drei Wege, alle gleichwertig:
+
+- `start.bat` / `start.sh` fragt beim ersten Start einmal nach (unter 1 MB),
+- im Manager unter **Einstellungen → Zusatzprogramme** „Fehlende herunterladen“ (dort steht auch, was sonst fehlt:
+  .NET, ffmpeg, 7-Zip),
+- von Hand: `.venv/Scripts/python tools/fetch_tools.py` (`--check` zeigt nur den Stand, `--force` lädt neu).
 
 | Wofür | Programm | Ablage | Quelle |
 |---|---|---|---|
-| PS4-Pakete bauen | PkgTool aus LibOrbisPkg (LGPL-3.0) + .NET-Runtime | `tools/PkgTool/` (`PkgTool.Core.dll` usw.) | https://github.com/maxton/LibOrbisPkg (Releases) |
-| PS3-Discs einlesen | scee_london (GPL-3.0) | `tools/scee_london/windows/scee_london.exe` | https://github.com/EdnessP/scee-london |
-| PS2-Discs einlesen | IPUenc von RavenDS (GPL-3.0) | `tools/IPUenc/IPUenc.exe` | IPUenc (RavenDS) |
+| PS4-Pakete bauen | PkgTool aus LibOrbisPkg v0.2.231 (LGPL-3.0) + .NET-Runtime | `tools/PkgTool/` (`PkgTool.Core.dll` usw.), **automatisch** | https://github.com/maxton/LibOrbisPkg (Release v0.2, `PkgTool.Core-0.2.231.zip`) |
+| PS3-Discs einlesen | scee_london v1.4.3 (GPL-3.0) | `tools/scee_london/windows/scee_london.exe`, **automatisch** | https://github.com/EdnessP/scee-london (Release v1.4.3) |
+| PS2-Discs einlesen | IPUenc v1.1 von ravenDS (GPL-3.0) | `tools/IPUenc/IPUenc.exe`, **automatisch** | https://github.com/ravenDS/IPUenc (Release v1.1, `IPUenc-win-x64.exe`) |
 | `.7z`-Disc-Abbilder | 7-Zip | `C:/Program Files/7-Zip/7z.exe` | https://www.7-zip.org |
 | Gesangstrennung für ADRS | Demucs | Pfad in `manager/config.json` → `demucs` (sonst PATH) | https://github.com/adefossez/demucs |
 | USDB-Downloads | UltraStarWorker | Ordner in `manager/config.json` → `usdb_worker` | – |
 | „PS3 prüfen“ | SingStar Fixer | Datei in `manager/config.json` → `singstar_fixer` | – |
+
+Eine neuere Version von PkgTool, scee_london oder IPUenc: in `tools/fetch_tools.py` Adresse, Version und `sha256` der
+Release-Dateien anpassen, dann `tools/fetch_tools.py --force`.
 
 PkgTool ist für .NET Core 3.0 gebaut; `tools/build_dlc.py` setzt `DOTNET_ROLL_FORWARD=Major`, damit es auch mit .NET 8
 läuft.

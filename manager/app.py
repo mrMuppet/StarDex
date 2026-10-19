@@ -1045,6 +1045,17 @@ def api_settings():
                     "lang": store.load("settings", {}).get("lang", "de")})
 
 
+@app.get("/api/tools")
+def api_tools():
+    import fetch_tools
+    return jsonify(fetch_tools.status())
+
+
+@app.post("/api/tools/fetch")
+def api_tools_fetch():
+    return jsonify(ok=True, job=consoles.FetchToolsJob().start().id)
+
+
 def clean_consoles(items: list) -> list[dict]:
     """Validate the console list from the settings dialog. Ids stay stable (cache, backups, favourites);
     a new console gets "ps4"/"ps3" if free (matches the data from the time with one console each), else ps4-2 …"""

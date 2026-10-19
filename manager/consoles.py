@@ -614,6 +614,25 @@ class ImportJob(Job):
             self.after(self)
 
 
+class FetchToolsJob(Job):
+    """Download the missing third-party programs (tools/fetch_tools.py: PkgTool, scee_london, IPUenc)."""
+
+    def __init__(self):
+        super().__init__("Zusatzprogramme herunterladen")
+
+    def run(self):
+        import fetch_tools
+        todo = fetch_tools.missing()
+        if not todo:
+            self.done.append("Alles schon vorhanden")
+            return
+        self.current = "lädt …"
+        self.errors += fetch_tools.fetch_missing(log=self.log.append)
+        if not self.errors:
+            self.done.append("Zusatzprogramme geladen")
+            store.log("tools", "Zusatzprogramme heruntergeladen: " + ", ".join(todo))
+
+
 class FixerJob(Job):
     """Run the PS3 check (singstar_fixer.py, read-only) against the PS3."""
 

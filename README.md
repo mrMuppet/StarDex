@@ -62,8 +62,9 @@ Song-Manager – Bibliothek mit allen Quellen und dem Status je Konsole:
 ## Schnellstart
 
 1. [Python](https://www.python.org) 3.10+ und [ffmpeg](https://ffmpeg.org) installieren (für die PS4 zusätzlich
-   .NET und PkgTool).
-2. `start.bat` doppelklicken (Linux/macOS: `./start.sh`) – richtet beim ersten Mal alles ein und öffnet den Manager.
+   die .NET-Runtime).
+2. `start.bat` doppelklicken (Linux/macOS: `./start.sh`) – richtet beim ersten Mal alles ein, bietet den Download von
+   PkgTool, scee_london und IPUenc an und öffnet den Manager.
 3. Im Manager unter **Einstellungen** die Konsolen eintragen, UltraStar-Songs nach `songs/ultrastar` legen, fertig.
 
 Ausführlich, inkl. Konsolen-Vorbereitung und Kommandozeile: **[docs/SETUP.md](docs/SETUP.md)**.
@@ -113,8 +114,8 @@ song_ids.json     vergebene Song-IDs der UltraStar-Songs (wird beim ersten Bau a
 ## Was du selbst mitbringst
 
 - **Deine Songs:** UltraStar-Ordner oder eigene SingStar-Discs. StarDex liefert keine Songs mit.
-- **Drittanbieter-Programme:** PkgTool, IPUenc und scee_london werden separat heruntergeladen –
-  Bezugsquellen und Ablageorte in [docs/SETUP.md](docs/SETUP.md).
+- **Drittanbieter-Programme:** PkgTool, scee_london und IPUenc lädt StarDex auf Wunsch selbst von GitHub
+  (`tools/fetch_tools.py`) – Bezugsquellen und Ablageorte in [docs/SETUP.md](docs/SETUP.md).
 - **Deine Einstellungen:** Konsolen und Speicherorte trägst du im Manager ein. Alles, was StarDex erzeugt
   (`songs/`, `build/`, `manager/data/`, `manager/config.json` …), bleibt lokal und wird von Git ignoriert.
 
