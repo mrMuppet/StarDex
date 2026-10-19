@@ -1,0 +1,6 @@
+# Eigene venv: tools/remote/.venv (nicht global installieren, pyee 8 kollidiert mit Playwright)
+pyremoteplay==0.7.6
+pyps4-2ndscreen==1.3.1
+pyee==8.2.2
+av<13
+netifaces-plus

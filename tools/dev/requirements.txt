@@ -1,0 +1,2 @@
+# Nur für die Entwicklerwerkzeuge in tools/dev (zusätzlich zu ../../requirements.txt)
+capstone

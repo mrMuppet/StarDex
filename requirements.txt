@@ -1,0 +1,5 @@
+# StarDex (Song-Manager und Konverter), Python 3.10+
+flask
+requests
+numpy
+pillow

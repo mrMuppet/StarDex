@@ -1,0 +1,14 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "song-manager",
+      "runtimeExecutable": "python",
+      "runtimeArgs": [
+        "manager/app.py",
+        "--no-browser"
+      ],
+      "port": 5077
+    }
+  ]
+}

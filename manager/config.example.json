@@ -1,0 +1,21 @@
+{
+  "ultrastar_dir": "songs/ultrastar",
+  "ps3_export_dir": "songs/ps3-bibliothek",
+  "ps2_choice": "build/ps2_choice.json",
+  "song_ids": "song_ids.json",
+  "pkg_dirs": {
+    "ultrastar": "build/batch",
+    "ps3disc": "build/batch_ps3disc",
+    "ps3lib": "build/batch_ps3",
+    "ps2": "build/batch_ps2"
+  },
+  "http_port": 5077,
+  "ps2_root": "songs/ps2-discs",
+  "ps3_imports": "songs/ps3-discs",
+  "console_imports": "songs/von-konsolen",
+  "toolbox_exports": "",
+  "toolbox_keys_db": "",
+  "demucs": "",
+  "singstar_fixer": "",
+  "usdb_worker": ""
+}

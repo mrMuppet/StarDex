@@ -1,0 +1,51 @@
+# --- Erzeugte Daten, Pakete, Sicherungen (sehr groß, teils Sony-/Song-Material) ---
+/build/
+/backup/
+/logs/
+/release/
+/poc/
+/songs/
+/-
+*.bin
+!tools/payload/dl0link.elf
+*.pkg
+*.psarc
+*.dat
+*.db
+*.iso
+*.7z
+*.zip
+*.mp4
+*.mp3
+*.ogg
+*.wav
+*.m2v
+
+# --- Persönliche Daten und Zugangsdaten ---
+manager/config.json
+manager/data/
+manager/cache/
+tools/dev/remote/ps4ctl.json
+tools/dev/remote/rp_profiles.json
+
+# --- Drittanbieter-Programme (siehe docs/SETUP.md) ---
+tools/PkgTool/
+tools/IPUenc/
+tools/scee_london/
+
+# --- Python ---
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# --- Sonstiges ---
+.claude/settings.local.json
+Thumbs.db
+.DS_Store
+
+# --- Eigene Song-Listen und private Prüfmuster ---
+song_ids.json
+rap_songs.json
+tools/release_private.txt
+docs/ERKENNTNISSE.md

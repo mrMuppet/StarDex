@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SingStar Song-Manager</title>
+<style>
+:root{--bg:#f6f5f2;--panel:#fff;--ink:#1d1d1f;--mute:#6b6b70;--line:#e3e1dc;--acc:#6d3fd6;--acc-ink:#fff;
+ --ok:#1f8a4c;--okbg:#e3f4ea;--warn:#a86400;--warnbg:#fbf0dc;--no:#8a8a90;--nobg:#efefef;--bad:#b3261e;--badbg:#fbe4e2;
+ --us:#4b2ab3;--usbg:#e6e0ff;--p3:#1d5aa8;--p3bg:#dcecff;--pd:#0b6e6e;--pdbg:#d5f2ef;--p2:#9a4712;--p2bg:#ffe6d6}
+@media (prefers-color-scheme:dark){:root{--bg:#17161a;--panel:#211f25;--ink:#ecebef;--mute:#9d9ba3;--line:#34313a;
+ --acc:#a58bff;--acc-ink:#17161a;--ok:#6fd49a;--okbg:#1d3326;--warn:#f0b35b;--warnbg:#3a2d17;--no:#8d8b93;--nobg:#2a282e;--bad:#ff8a80;--badbg:#3d1f1c;
+ --us:#c6b8ff;--usbg:#2e2650;--p3:#9cc7ff;--p3bg:#1c2f47;--pd:#7fe0d6;--pdbg:#173a37;--p2:#ffb98a;--p2bg:#3d2718}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 20px;background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+h1{font-size:18px;margin:0 10px 0 0}
+h2{font-size:17px;margin:4px 0 8px}h3{font-size:15px;margin:14px 0 6px}
+.console{display:flex;align-items:center;gap:7px;padding:5px 10px;border:1px solid var(--line);border-radius:8px}
+.console small{color:var(--mute)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--no)}.dot.on{background:var(--ok)}
+button{font:inherit;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:7px;padding:5px 11px;cursor:pointer}
+button:hover{border-color:var(--acc)}button.primary{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+button.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 50%,var(--line))}
+button:disabled{opacity:.5;cursor:default}button.small{padding:2px 8px;font-size:12px}
+nav{display:flex;gap:4px;padding:10px 20px 0;flex-wrap:wrap}
+nav button{border-radius:8px 8px 0 0;border-bottom:none}nav button.on{background:var(--acc);color:var(--acc-ink);border-color:var(--acc)}
+main{padding:14px 20px 110px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:10px;margin-bottom:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 12px;cursor:pointer}
+.card b{display:block;font-size:21px}.card span{color:var(--mute);font-size:12px}.card.active{outline:2px solid var(--acc)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+input,select,textarea{font:inherit;padding:6px 9px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink)}
+input[type=checkbox]{padding:0}input[type=range]{padding:0}
+#q{min-width:240px;flex:1;max-width:400px}
+.box{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:clip}
+.pad{padding:12px 14px}
+table{border-collapse:collapse;width:100%}
+th,td{padding:6px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;vertical-align:middle}
+th{position:sticky;top:var(--hdr,56px);z-index:3;box-shadow:inset 0 -1px 0 var(--line);background:var(--panel);font-weight:600;cursor:pointer;user-select:none;font-size:12px;color:var(--mute)}
+td.t{white-space:normal;min-width:160px}
+tbody tr{cursor:pointer}tbody tr:hover td{background:color-mix(in srgb,var(--acc) 6%,transparent)}
+tr.sel td{background:color-mix(in srgb,var(--acc) 13%,transparent)}
+.cov{width:34px;height:34px;border-radius:4px;object-fit:cover;background:var(--nobg);display:block}
+.b{display:inline-block;padding:1px 7px;border-radius:10px;font-size:12px;margin:1px 3px 1px 0;white-space:nowrap}
+.ok{background:var(--okbg);color:var(--ok)}.warn{background:var(--warnbg);color:var(--warn)}.no{background:var(--nobg);color:var(--no)}.bad{background:var(--badbg);color:var(--bad)}
+.src-ultrastar{background:var(--usbg);color:var(--us)}.src-ps3lib{background:var(--p3bg);color:var(--p3)}.src-ps2{background:var(--p2bg);color:var(--p2)}.src-ps3disc{background:var(--pdbg);color:var(--pd)}
+.ed{font-size:12px;color:var(--mute);white-space:normal;max-width:220px}
+.mute{color:var(--mute)}.err{color:var(--bad)}
+.lvl-error{color:var(--bad)}.lvl-warn{color:var(--warn)}.lvl-info{color:var(--mute)}
+#bar{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--line);padding:9px 20px;display:none;gap:10px;align-items:center;flex-wrap:wrap;z-index:6}
+#bar.show{display:flex}
+.prog{flex:1;min-width:160px;height:8px;background:var(--nobg);border-radius:4px;overflow:hidden}.prog i{display:block;height:100%;background:var(--acc);width:0}
+.job{display:flex;gap:10px;align-items:center;flex-wrap:wrap;width:100%}
+.xclose{position:sticky;top:0;float:right;z-index:4;margin:-6px -8px 0 8px;width:34px;height:34px;padding:0;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--panel)}
+.xclose svg{width:14px;height:14px;display:block}
+#detail{position:fixed;top:0;right:0;bottom:0;width:min(620px,100%);background:var(--panel);border-left:1px solid var(--line);padding:16px 18px 60px;overflow:auto;transform:translateX(100%);transition:transform .15s;z-index:10;box-shadow:-8px 0 30px rgb(0 0 0/.12)}
+#detail.show{transform:none}
+.fav{color:#d4a017;font-size:13px;white-space:nowrap}.fav small{font-size:9px;vertical-align:super}
+.charts{font-size:13px;margin:4px 0 8px}.charts th,.charts td{padding:3px 8px;position:static;cursor:default}
+#detail dl{display:grid;grid-template-columns:130px 1fr;gap:3px 10px;font-size:13px;margin:6px 0}
+#detail dt{color:var(--mute)}#detail dd{margin:0;word-break:break-word}
+.dhead{display:flex;gap:14px;align-items:flex-start}.dhead img{width:110px;height:110px;object-fit:cover;border-radius:8px}
+.player video{width:100%;max-height:300px;background:#000;border-radius:8px;display:block}
+.lyr{margin-top:8px;padding:10px;border-radius:8px;background:var(--nobg);min-height:62px;font-size:17px;text-align:center}
+.lyr .nx{font-size:14px;color:var(--mute);margin-top:4px}.lyr .w{transition:color .05s}.lyr .w.on{color:var(--acc);font-weight:600}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.form{display:grid;grid-template-columns:110px 1fr;gap:6px 10px;align-items:center}
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);max-width:560px;width:calc(100% - 32px)}
+#settings{max-width:700px}#scons input:not([type]){width:100%;min-width:60px}#scons [data-c=host]{min-width:118px}#scons [data-c=port]{min-width:52px}
+dialog::backdrop{background:rgb(0 0 0/.35)}
+#msg{color:var(--bad);font-size:13px}
+.grp{border:1px solid var(--line);border-radius:10px;margin-bottom:10px;background:var(--panel)}
+.grp h4{margin:0;padding:8px 12px;border-bottom:1px solid var(--line);font-size:14px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.grp table td{white-space:normal}
+pre.log{max-height:340px;overflow:auto;background:var(--nobg);padding:10px;border-radius:8px;font-size:12px;white-space:pre-wrap}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:12px}
+@media (max-width:700px){.box{overflow-x:auto}header,main,nav{padding-left:16px;padding-right:16px}#q{min-width:0;width:100%;max-width:none}.form{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>SingStar Song-Manager</h1>
+  <span id="conshead" style="display:contents"></span>
+  <button id="rescan" title="UltraStar-Ordner, PS3-Bibliothek, PS2 und Pakete neu einlesen">PC neu einlesen</button>
+  <button id="setbtn">Einstellungen</button>
+  <span id="msg"></span>
+</header>
+<nav id="tabs">
+  <button data-tab="lib" class="on">Bibliothek</button>
+  <button data-tab="issues">Baustellen</button>
+  <button data-tab="dupes">Dubletten</button>
+  <button data-tab="imp">Discs einlesen</button>
+  <button data-tab="wish">Wunschliste</button>
+  <button data-tab="cons">Konsolen &amp; Verlauf</button>
+</nav>
+<main>
+<section id="t-lib">
+  <div class="cards" id="cards"></div>
+  <div class="filters">
+    <input type="search" id="q" placeholder="Interpret, Titel, Edition oder ID …">
+    <select id="fsrc"><option value="">Alle Quellen</option><option value="ultrastar">UltraStar</option><option value="ps3disc">PS3-Disc (eingelesen)</option><option value="ps3lib">PS3-Bibliothek</option><option value="ps2">PS2-Disc</option><option value="console">Nur auf Konsole</option><option value="new">Neu (nicht umgewandelt)</option></select>
+    <select id="fed"><option value="">Alle Editionen</option></select>
+    <select id="fcon"><option value="">Alle Konsolen</option></select>
+    <select id="fuse"><option value="">Alle Songs</option></select>
+    <span class="mute" id="count"></span>
+  </div>
+  <div class="box"><table>
+    <thead><tr id="libhead"></tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+</section>
+<section id="t-issues" hidden>
+  <div class="filters"><select id="ilvl"><option value="">Alle Stufen</option><option value="error">Fehler</option><option value="warn">Warnungen</option><option value="info">Hinweise</option></select><span class="mute">Klick auf einen Song öffnet Details, Vorschau und Bearbeiten.</span></div>
+  <div id="issuelist"></div>
+</section>
+<section id="t-dupes" hidden>
+  <p class="mute">Gleicher Interpret und Titel unter verschiedenen IDs. Wähle je Gruppe, welche Fassung bleibt. Nicht behaltene Fassungen werden überall als „entfernen“ markiert. Auf der PS4 löschst du sie im Spiel unter Einstellungen → Songs löschen.</p>
+  <div class="filters"><label><input type="checkbox" id="donlyopen" checked> nur unentschiedene</label></div>
+  <div id="dupelist"></div>
+</section>
+<section id="t-imp" hidden>
+  <div class="box pad" style="margin-bottom:12px">
+    <p>PS3- und PS2-Abbilder (<code>.iso</code> oder <code>.7z</code> mit ISO darin) in die Bibliothek einlesen. PS3 braucht <b>entschlüsselte</b> Abbilder (<code>.dec.iso</code>, z. B. mit PS3 ISO Tools) – originale Redump-ISOs sind zusätzlich verschlüsselt. Ziel: die Ordner „Eingelesene PS3-Discs“ und „PS2-Discs“ unter Einstellungen → Speicherorte am PC.</p>
+    <div class="row"><input id="impdir" style="flex:1;min-width:260px" placeholder="Ordner mit Disc-Abbildern"><button id="implist">Ordner anzeigen</button></div>
+  </div>
+  <div id="impfiles"></div>
+</section>
+<section id="t-wish" hidden>
+  <div class="box pad" style="margin-bottom:12px">
+    <div class="row"><input id="wa" placeholder="Interpret"><input id="wt" placeholder="Titel"><input id="wn" placeholder="Notiz (optional)"><button class="primary" id="wadd">Auf die Wunschliste</button><button id="wsearch">Nur in USDB suchen</button></div>
+    <div class="row"><label title="Wandelt die geladenen Songs in PS4-Pakete um. Dabei bekommt jeder neue Song seine Song-ID – ohne die geht er auf keine Konsole. Ist bei „danach auf“ eine Konsole angehakt, wird immer gebaut."><input type="checkbox" id="dlbuild" checked> nach dem Laden gleich PS4-Paket bauen</label><label><input type="checkbox" id="dlvideo" checked> mit Video</label><span id="dltg"></span><button id="dlall">Alle gemerkten USDB-Songs laden</button><button id="ucheck">Auf USDB-Updates prüfen</button><span class="mute" id="ucheckt" style="font-size:12px"></span><button id="uinfo" title="Bewertung, Songcheck und Kommentare für alle UltraStar-Songs von USDB holen">USDB-Infos aktualisieren</button><span class="mute" style="font-size:12px">Laden mit deinem UltraStarWorker (usdb_download.py) in den UltraStar-Ordner.</span></div>
+    <div id="wres"></div>
+  </div>
+  <div id="wlist"></div>
+</section>
+<section id="t-cons" hidden>
+  <div class="cols" id="conboxes"></div>
+  <h3>Aufgaben</h3><div id="joblist" class="box pad"></div>
+  <h3>Verlauf</h3><div class="box"><table><tbody id="hist"></tbody></table></div>
+</section>
+</main>
+<div id="bar">
+  <div class="job" id="selrow"><span id="selinfo"></span>
+  <button id="build">PS4-Pakete bauen</button>
+  <button class="primary" id="upload">Auf PS4 hochladen (/data/pkg)</button>
+  <button id="ps3w">Auf PS3 übertragen</button>
+  <button id="pullb">Auf den PC holen</button>
+  <button id="clear">Auswahl aufheben</button></div>
+  <div class="job" id="jobhead" hidden><b id="jobsum"></b><button class="small" id="jobclear">fertige ausblenden</button><button class="small" id="jobfold" title="Aufträge ein-/ausklappen">▾ einklappen</button></div>
+  <div id="jobs" style="width:100%;max-height:30vh;overflow:auto"></div>
+</div>
+<aside id="detail"></aside>
+<dialog id="confirm"><div id="ctext"></div><p style="text-align:right"><button id="cno">Abbrechen</button> <button class="primary" id="cyes">OK</button></p></dialog>
+<dialog id="settings"><h3>Einstellungen</h3>
+  <div class="form">
+    <label>Sprache / Language</label><select id="slang"><option value="de">Deutsch</option><option value="en">English</option></select>
+    <label>USDB-Name</label><input id="sun" autocomplete="off">
+    <label>USDB-Passwort</label><input id="sup" type="password" autocomplete="new-password" placeholder="unverändert lassen">
+  </div>
+  <h3>Konsolen</h3>
+  <p class="mute" style="font-size:12px;margin-top:0">Beliebig viele PS3 und PS4 – oder nur eine Konsole. PS4: GoldHEN-FTP (Port 2121), PS3: webMAN-FTP (Port 21). Nicht aktive Konsolen werden weder überwacht noch angezeigt; ihre gelesenen Daten bleiben erhalten.</p>
+  <div id="scons"></div>
+  <div class="row"><button class="small" id="sadd4">+ PS4</button><button class="small" id="sadd3">+ PS3</button></div>
+  <p class="mute" style="font-size:12px">Installation (PS4): <b>PKG</b> = Pakete nach <code>/data/pkg</code>, installieren mit dem Paket-Installer von GoldHEN (ganzer Ordner auf einmal, kein Größenlimit). <b>Disc-Pack</b> = ohne PKG über den GoldHEN-Spielpatch (Konsolen-Kasten → „Disc-Lader einrichten“); alle Songs in einer Datei unter <code>/user/av_contents/video/ss</code> (Verweis aus <code>download0</code>), ohne Größenlimit, jederzeit übertragbar; wirksam nach Neustart von SingStar.</p>
+  <div class="form"><label>Videos im Disc-Pack</label><select id="sdcrf"><option value="">Original</option><option value="24">verkleinert (CRF 24, ca. 40–60 MB je Song)</option><option value="28">stark verkleinert (CRF 28)</option></select></div>
+  <h3>Gesangstrennung</h3>
+  <p class="mute" style="font-size:12px;margin-top:0">Für die Stimmreduzierung im Spiel (ADRS) wird beim Umwandeln die Stimme vom Playback getrennt (Demucs, je Song mehrere Minuten). PS2-Discs mit eigener Gesangsspur brauchen dafür keine Trennung. Gilt für neue PS4-Pakete und PS3-Fassungen; fertige Pakete bleiben, wie sie sind.</p>
+  <div class="form"><label>Gesangstrennung</label><select id="sadrs"><option value="full">an (Stimmreduzierung für alle Songs, langsam)</option><option value="nodemucs">nur ohne Trennung (Stimmreduzierung nur für PS2-Songs mit eigener Gesangsspur)</option><option value="off">aus (keine Stimmreduzierung, am schnellsten)</option></select></div>
+  <h3>Speicherorte am PC</h3>
+  <div class="form">
+    <label>UltraStar-Songs</label><input data-path="ultrastar_dir">
+    <label>PS3-Bibliothek</label><input data-path="ps3_export_dir" title="Toolbox-Export (FileSystem/Export)">
+    <label>Eingelesene PS3-Discs</label><input data-path="ps3_imports">
+    <label>PS2-Discs</label><input data-path="ps2_root">
+    <label>PS4-Pakete</label><input data-path="pkg_root" title="enthält batch/, batch_ps3/, batch_ps3disc/, batch_ps2/">
+    <label>Von Konsolen übernommen</label><input data-path="console_imports" title="Songs, die nur auf PS3/PS4 waren">
+  </div>
+  <label class="row"><input type="checkbox" id="smove" checked> vorhandene PS4-Pakete beim Ändern in den neuen Ordner verschieben</label>
+  <p class="mute" style="font-size:12px;margin:2px 0 6px" id="spkg"></p>
+  <h3>PS3-Fassungen</h3>
+  <p class="mute" style="font-size:12px;margin-top:0">Die PS3 spielt höchstens 720p (1080p bleibt schwarz, getestet 30.09.). Songs mit größerem Video, z. B. 1080p-UltraStar, bekommen für die PS3 eine verkleinerte Fassung. Songs aus PS3-Quellen brauchen keine.</p>
+  <label class="row"><input type="checkbox" id="s3keep"> Verkleinerte PS3-Fassungen dauerhaft auf dem PC behalten</label>
+  <p class="mute" style="font-size:12px;margin:2px 0 6px">An: schneller beim erneuten Übertragen, braucht Speicherplatz. Aus: nach dem Übertragen auf die PS3 wieder löschen und bei Bedarf neu erzeugen.</p>
+  <div class="form"><label>Ordner</label><input id="s3dir"></div>
+  <p class="mute" style="font-size:12px" id="s3use"></p>
+  <p class="mute" style="font-size:12px">Die USDB-Zugangsdaten bleiben lokal in <code>manager/data/secrets.json</code> und werden nur an usdb.animux.de geschickt.</p>
+  <p class="err" id="serr"></p>
+  <p style="text-align:right"><button onclick="settings.close()">Abbrechen</button> <button class="primary" id="ssave">Speichern</button></p>
+</dialog>
+<script src="/i18n.js"></script>
+<script>
+const $=s=>document.querySelector(s);
+let data={songs:[]},sel=new Set(),sortK='artist',sortDir=1,card='',tab='lib';
+const SRC={ultrastar:'UltraStar',ps3disc:'PS3-Disc',ps3lib:'PS3',ps2:'PS2',ps4pkg:'PS4-Paket'};
+const ST={installed:['installiert','ok'],pending:['wartet','warn'],no:['fehlt','no'],yes:['vorhanden','ok'],
+  disc:['im Disc-Pack','ok'],queued:['vorgemerkt','warn'],leaving:['wird entfernt','warn']};
+const HAVE4=['installed','disc','queued'];  // on a PS4 or on its way there
+/* consoles: any number of PS3/PS4 (settings); a song row has on = {console id: state} */
+const conAll=()=>data.consoles||[];
+const conAct=()=>conAll().filter(c=>c.enabled);
+const conOf=t=>conAct().filter(c=>c.type===t);
+const conRead=()=>conAct().filter(c=>c.time);
+const cname=id=>conAll().find(c=>c.id===id)?.name||String(id).toUpperCase();
+const onB=(s,cid)=>{const v=s.on?.[cid];return v?`<span class="b ${ST[v][1]}">${ST[v][0]}</span>`:'<span class="mute">?</span>'};
+const onAny=(s,...v)=>Object.values(s.on||{}).some(x=>v.includes(x));
+/* targets for new songs (disc import, USDB): remembered per browser */
+function targetPick(){let saved=[];try{saved=JSON.parse(localStorage.getItem('ssm-targets')||'[]')}catch(e){}
+  return conAct().length?`<span class="tgpick">danach auf: ${conAct().map(c=>`<label style="margin-right:8px"><input type="checkbox" data-tgtpick="${c.id}" ${saved.includes(c.id)?'checked':''}> ${esc(c.name)}${c.disc?' (Disc-Pack)':''}</label>`).join('')}</span>`:''}
+function pickedTargets(root){const ids=[...root.querySelectorAll('[data-tgtpick]:checked')].map(i=>i.dataset.tgtpick);
+  try{localStorage.setItem('ssm-targets',JSON.stringify(ids))}catch(e){}return ids}
+function targetBoxes(list){return list.length<2?'':`<p>Ziel: ${list.map(c=>`<label style="margin-right:10px"><input type="checkbox" data-tgt="${c.id}" checked> ${esc(c.name)}${c.online?'':' <span class="mute">(offline)</span>'}</label>`).join('')}</p>`}
+const readTargets=list=>list.length<2?list.map(c=>c.id):[...document.querySelectorAll('#ctext [data-tgt]:checked')].map(i=>i.dataset.tgt);
+function conText(c){const off=c.online?'':(c.time?'offline · Stand ':'offline · ');
+  if(!c.time)return off+`nicht gelesen (${c.host})`;
+  return off+ago(c.time)+(c.type==='ps4'?` · ${c.installed} installiert · ${c.pending} in /data/pkg`:` · ${c.songs} Songs`)+(c.free!=null?' · frei '+gb(c.free):'')
+    +(c.disc?` · Disc-Pack ${c.disc.uploaded} Songs${c.disc.pending?' (Änderungen offen)':''}`:'')}
+function renderHead(){
+  $('#conshead').innerHTML=conAct().map(c=>`<div class="console"><span class="dot ${c.online?'on':''}"></span><b>${esc(c.name)}</b> <small>${esc(conText(c))}</small> <button class="small" data-scan="${c.id}" ${c.online?'':'disabled title="Konsole ist nicht erreichbar"'}>Lesen</button></div>`).join('')
+    ||'<span class="mute">Keine Konsole eingerichtet – unter Einstellungen hinzufügen.</span>';
+}
+function buildFilters(){
+  const keep=(q,html)=>{const el=$(q),v=el.value;el.innerHTML=html;if([...el.options].some(o=>o.value===v))el.value=v};
+  keep('#fcon','<option value="">Alle Konsolen</option>'+conRead().map(c=>(c.type==='ps4'?[['installed','installiert'],...(c.disc?[['disc','im Disc-Pack'],['queued','vorgemerkt']]:[['pending','wartet in /data/pkg']]),['no','fehlt']]:[['yes','vorhanden'],['no','fehlt']])
+    .map(([v,l])=>`<option value="${c.id}:${v}">${esc(c.name)}: ${l}</option>`).join('')).join(''));
+  const fc=conAct();
+  keep('#fuse','<option value="">Alle Songs</option><option value="fav">★ Favoriten (irgendwo)</option>'
+    +(fc.length>1?'<option value="favall">★ Favorit auf allen Konsolen</option>'+fc.map(c=>`<option value="fav:${c.id}">★ Favorit auf ${esc(c.name)}</option>`).join(''):'')
+    +'<option value="sung">schon gesungen</option><option value="never">nie gesungen</option>');
+  $('#libhead').innerHTML='<th><input type="checkbox" id="all" title="alle angezeigten Songs auswählen"></th><th></th><th data-k="artist">Interpret</th><th data-k="title">Titel</th><th data-k="ed">Edition</th><th data-k="id">ID</th><th data-k="src">Quelle</th><th data-k="mb">Paket</th><th data-k="plays" title="wie oft gesungen (alle Konsolen)">Gesungen</th>'
+    +conRead().map(c=>`<th data-k="c:${c.id}">${esc(c.name)}</th>`).join('');
+  }
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ago=t=>{if(!t)return'nicht gelesen';const m=Math.round((Date.now()/1000-t)/60);return m<1?'gerade eben':m<60?`vor ${m} min`:m<1440?`vor ${Math.round(m/60)} h`:new Date(t*1000).toLocaleString(LOC())};
+const gb=b=>b==null?'?':(b/2**30).toFixed(1)+' GB';
+const norm=s=>String(s).normalize('NFKD').replace(/[̀-ͯ]/g,'').toLowerCase();
+const api=async(u,o={})=>{
+  // network errors / dead server must not leave buttons hanging ("liest …" forever)
+  const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),o.timeout||90000);
+  let r;
+  try{r=await fetch(u,{...o,signal:ctl.signal,headers:{'Content-Type':'application/json'},body:o.body&&JSON.stringify(o.body)})}
+  catch(e){clearTimeout(tm);const msg=e.name==='AbortError'?'Zeitüberschreitung':'Manager-Server nicht erreichbar – start.bat neu starten';$('#msg').textContent=msg;return{ok:false,error:msg,songs:[]}}
+  clearTimeout(tm);if($('#msg').textContent.startsWith('Manager-Server'))$('#msg').textContent='';
+  const j=await r.json().catch(()=>({ok:false,error:r.statusText}));if(!r.ok&&j.ok===undefined)j.ok=false;return j};
+function ask(html,okText='OK'){return new Promise(res=>{$('#ctext').innerHTML=html;$('#cyes').textContent=okText;const d=$('#confirm');d.showModal();$('#cyes').onclick=()=>{d.close();res(true)};$('#cno').onclick=()=>{d.close();res(false)}})}
+
+async function load(){
+  const d=await api('/api/library');if(d.ok===false)return;data=d;
+  data.songs.forEach(x=>{DATA_TEXTS.add(x.artist);DATA_TEXTS.add(x.title);DATA_TEXTS.add(`${x.artist} – ${x.title}`);x.editions.forEach(e=>DATA_TEXTS.add(e))});
+  conAll().forEach(c=>DATA_TEXTS.add(c.name));
+  renderHead();buildFilters();
+  const eds=[...new Set(data.songs.flatMap(s=>s.editions))].sort((a,b)=>a.localeCompare(b,LOC()));
+  const cur=$('#fed').value;$('#fed').innerHTML='<option value="">Alle Editionen</option>'+eds.map(e=>`<option ${e===cur?'selected':''}>${esc(e)}</option>`).join('');
+  const ni=data.songs.filter(s=>s.issues.some(i=>i.level!=='info')).length;
+  const nd=new Set(data.songs.filter(s=>s.dupe_state==='undecided').map(s=>norm(s.artist)+norm(s.title))).size;
+  $('[data-tab=issues]').textContent=`Baustellen (${ni})`;$('[data-tab=dupes]').textContent=`Dubletten (${nd})`;
+  render();
+}
+function render(){({lib:renderLib,issues:renderIssues,dupes:renderDupes,imp:()=>{},wish:renderWish,cons:renderCons})[tab]();updBar()}
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{tab=b.dataset.tab;document.querySelectorAll('#tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  document.querySelectorAll('main>section').forEach(s=>s.hidden=s.id!=='t-'+tab);render()});
+
+/* ---------- Bibliothek ---------- */
+function CARDS(){
+  const c=[['all','Songs gesamt',s=>!s.new]];
+  for(const k of conRead()){const v=s=>s.on?.[k.id];
+    if(k.type==='ps4'&&k.disc)c.push([`disc:${k.id}`,`${k.name}: im Disc-Pack`,s=>v(s)==='disc'],[`queued:${k.id}`,`${k.name}: vorgemerkt`,s=>v(s)==='queued'||v(s)==='leaving']);
+    if(k.type==='ps4')c.push([`in:${k.id}`,`${k.name}: installiert`,s=>v(s)==='installed'],[`wait:${k.id}`,`${k.name}: wartet auf Installation`,s=>v(s)==='pending'],
+      [`miss:${k.id}`,`${k.name}: fehlt (Paket fertig)`,s=>v(s)==='no'&&s.pkg&&s.dupe_state!=='remove']);
+    else c.push([`in:${k.id}`,`${k.name}: vorhanden`,s=>v(s)==='yes'],[`miss:${k.id}`,`${k.name}: fehlt`,s=>v(s)==='no'])}
+  return c.concat([
+   ['remove','zum Entfernen markiert',s=>s.dupe_state==='remove'&&onAny(s,'installed','yes')],
+   ['nopkg','ohne PS4-Paket',s=>!s.pkg&&!s.only_console],
+   ['console','nur auf Konsole (nicht am PC)',s=>!!s.only_console],
+   ['new','neu, nicht umgewandelt',s=>s.new]]);
+}
+function useOk(s,u){const f=s.user?.fav||{},p=s.user?.plays||0;if(!u)return true;
+  if(u==='fav')return Object.keys(f).length>0;
+  if(u==='favall')return conAct().every(c=>f[c.id]);
+  if(u.startsWith('fav:'))return !!f[u.slice(4)];
+  return u==='sung'?p>0:u==='never'?!p&&!s.only_console:true}
+function filtered(){
+  const q=norm($('#q').value.trim()),fs=$('#fsrc').value,fe=$('#fed').value,fc=$('#fcon').value;
+  const [fcid,fst]=fc?[fc.slice(0,fc.lastIndexOf(':')),fc.slice(fc.lastIndexOf(':')+1)]:[];
+  const cf=card?(CARDS().find(c=>c[0]===card)||[,,()=>true])[2]:()=>true;
+  return data.songs.filter(s=>cf(s)
+    &&(!q||norm(`${s.artist} ${s.title} ${s.id} ${s.ps3_id} ${s.editions.join(' ')}`).includes(q))
+    &&(!fs||(fs==='console'?s.only_console:fs==='new'?s.new:s.sources.includes(fs)))
+    &&(!fe||s.editions.includes(fe))&&(!fc||s.on?.[fcid]===fst)&&useOk(s,$('#fuse').value));
+}
+function key(s){if(sortK==='plays')return s.user?.plays||0;if(sortK.startsWith('c:'))return s.on?.[sortK.slice(2)]||'';return sortK==='src'?(s.sources[0]||'z'):sortK==='mb'?(s.pkg?.mb??-1):sortK==='id'?s.id:sortK==='ed'?(s.editions[0]||'~'):(s[sortK]??'')}
+const srcB=s=>s.sources.map(k=>`<span class="b src-${k}">${SRC[k]||k}</span>`).join('')||`<span class="b warn">nur auf ${esc((s.only_on||[s.only_console]).map(cname).join(', '))}</span>`;
+const favB=s=>{const f=s.user?.fav;if(!f)return'';const ids=Object.keys(f),all=conAct().length;
+  return ` <span class="fav" title="Favorit auf ${esc(ids.map(cname).join(' + '))}">★<small>${all>1&&ids.length<all?esc(ids.map(cname).join('+')):''}</small></span>`};
+const dateD=ns=>ns?new Date(ns/1e6).toLocaleDateString(LOC()):'';
+const playsB=s=>s.user?.plays?`<span title="zuletzt ${dateD(s.user.last)}${s.user.best?' · Bestwert '+s.user.best.toLocaleString(LOC()):''}">${s.user.plays}×</span>`:'<span class="mute">–</span>';
+const stars=r=>'★'.repeat(Math.floor(r||0))+((r||0)%1?'½':'');
+const covI=s=>s.cover?`<img class="cov" loading="lazy" src="/api/cover/${s.id}" onerror="this.replaceWith(Object.assign(document.createElement('span'),{className:'cov'}))">`:'<span class="cov"></span>';
+function flags(s){let f='';if(s.new)f+=' <span class="b warn">neu</span>';if(s.dupe_state==='remove')f+=' <span class="b bad">entfernen</span>';
+  else if(s.dupe_state==='undecided')f+=' <span class="b warn" title="ID '+s.dupes.join(', ')+'">Dublette?</span>';
+  if(s.issues.some(i=>i.level==='error'))f+=` <span class="b bad" title="${esc(s.issues.map(i=>i.text).join('\n'))}">!</span>`;return f}
+function renderLib(){
+  $('#cards').innerHTML=CARDS().map(([k,l,f])=>`<div class="card ${card===k?'active':''}" data-card="${k}"><b>${data.songs.filter(f).length}</b><span>${esc(l)}</span></div>`).join('');
+  const rows=filtered().sort((a,b)=>{const x=key(a),y=key(b);return(typeof x==='number'?x-y:String(x).localeCompare(String(y),LOC()))*sortDir});
+  $('#count').textContent=`${rows.length} Songs`;
+  $('#rows').innerHTML=rows.map(s=>`<tr data-id="${s.id}" class="${sel.has(s.id)?'sel':''}">
+<td><input type="checkbox" ${sel.has(s.id)?'checked':''}></td><td>${covI(s)}</td>
+<td class="t">${esc(s.artist)}</td><td class="t">${esc(s.title)}${favB(s)}${flags(s)}${s.usdb?` <span class="mute" title="USDB: ${s.usdb.rating} Sterne, ${s.usdb.votes} Stimmen${s.usdb.songcheck?', geprüft':''}" style="font-size:12px">${stars(s.usdb.rating)}</span>`:''}</td>
+<td class="ed">${esc(s.editions.join(' · '))}</td>
+<td>${s.new?'–':s.id}${s.ps3_id&&s.ps3_id!==s.id?`<br><small class="mute">PS3 ${s.ps3_id}</small>`:''}</td>
+<td>${srcB(s)}</td>
+<td>${s.pkg?`<span class="mute">${SRC[s.pkg.source]} · ${s.pkg.mb} MB</span>`:'<span class="b bad">kein Paket</span>'}</td>
+<td>${playsB(s)}</td>${conRead().map(c=>`<td>${onB(s,c.id)}</td>`).join('')}</tr>`).join('');
+}
+$('#rows').addEventListener('click',e=>{
+  const tr=e.target.closest('tr');if(!tr)return;const id=+tr.dataset.id;
+  if(e.target.type==='checkbox'){e.target.checked?sel.add(id):sel.delete(id);tr.classList.toggle('sel',e.target.checked);updBar();return}
+  detail(id);
+});
+$('#clear').onclick=()=>{sel.clear();if($('#all'))$('#all').checked=false;render()};
+// header checkbox: select/deselect all songs currently shown (header is rebuilt on every load -> delegated)
+$('#libhead').addEventListener('change',e=>{if(e.target.id!=='all')return;filtered().forEach(x=>{e.target.checked?sel.add(x.id):sel.delete(x.id)});render()});
+$('#libhead').addEventListener('click',e=>{const th=e.target.closest('th[data-k]');if(!th)return;const k=th.dataset.k;sortDir=sortK===k?-sortDir:1;sortK=k;render()});
+['#q','#fsrc','#fed','#fcon','#fuse'].forEach(s=>$(s).addEventListener('input',render));
+$('#cards').onclick=e=>{const c=e.target.closest('.card');if(!c)return;card=card===c.dataset.card||c.dataset.card==='all'?'':c.dataset.card;render()};
+
+/* ---------- Baustellen ---------- */
+const CODES={usdbupdate:'Neue Version bei USDB',usdbrating:'Schlechte USDB-Bewertung',usdbcomments:'USDB-Kommentare melden Probleme',usdbgap:'USDB-Kommentar mit GAP-Vorschlag',syllables:'Silbentrennung fehlerhaft (PS3-Toolbox)',nopkg:'Kein PS4-Paket',build:'Bau fehlgeschlagen',new:'Neu, noch nicht umgewandelt',usmissing:'UltraStar-Ordner fehlt',nocover:'Ohne Cover',timing:'Timing prüfen',dupe:'Mögliche Dublette',lowres:'Niedrige Auflösung',quiet:'Leise Quelle (stark angehoben)',noedition:'Edition unbekannt'};
+function renderIssues(){
+  const lv=$('#ilvl').value,groups={};
+  for(const s of data.songs)for(const i of s.issues)if(!lv||i.level===lv)(groups[i.code]??={level:i.level,items:[]}).items.push([s,i]);
+  const order={error:0,warn:1,info:2};
+  $('#issuelist').innerHTML=Object.entries(groups).sort((a,b)=>order[a[1].level]-order[b[1].level]||b[1].items.length-a[1].items.length).map(([c,g])=>
+    `<details class="grp" ${g.level!=='info'?'open':''}><summary style="padding:8px 12px;cursor:pointer"><b class="lvl-${g.level}">${esc(CODES[c]||c)}</b> <span class="mute">(${g.items.length})</span></summary>
+    <table><tbody>${g.items.map(([s,i])=>`<tr data-id="${s.id}"><td>${covI(s)}</td><td class="t">${esc(s.artist)} – ${esc(s.title)}</td><td class="ed">${esc(s.editions.join(' · '))}</td><td class="t lvl-${i.level}">${esc(i.text)}</td></tr>`).join('')}</tbody></table></details>`).join('')||'<p class="mute">Keine Baustellen 🎉</p>';
+}
+$('#ilvl').oninput=render;
+$('#issuelist').onclick=e=>{const tr=e.target.closest('tr[data-id]');if(tr)detail(+tr.dataset.id)};
+
+/* ---------- Dubletten ---------- */
+function renderDupes(){
+  const groups={};
+  for(const s of data.songs)if(s.dupes.length&&!s.new)(groups[norm(s.artist)+'|'+norm(s.title)]??=[]).push(s);
+  const open=$('#donlyopen').checked;
+  $('#dupelist').innerHTML=Object.values(groups).filter(g=>!open||g.some(s=>s.dupe_state==='undecided')).map(g=>{
+    const st=g[0].dupe_state;
+    return `<div class="grp"><h4><span>${esc(g[0].artist)} – ${esc(g[0].title)}</span><span>${st==='undecided'?'<span class="b warn">offen</span>':st==='both'?'<span class="b ok">beide behalten</span>':'<span class="b ok">entschieden</span>'}
+      <button class="small" data-keep="both" data-id="${g[0].id}">Beide behalten</button> <button class="small" data-keep="" data-id="${g[0].id}">zurücksetzen</button></span></h4>
+    <table><tbody>${g.map(s=>`<tr><td>${covI(s)}</td><td><b>${s.id}</b><br>${srcB(s)}</td><td class="ed">${esc(s.editions.join(' · '))}<br>${esc(s.meta.size||'')} ${esc(s.meta.origin||'')}</td>
+      <td>${s.pkg?s.pkg.mb+' MB':'kein Paket'}</td><td>${conRead().map(c=>`${esc(c.name)} ${onB(s,c.id)}`).join('<br>')}</td>
+      <td>${s.dupe_state==='keep'?'<span class="b ok">bleibt</span>':s.dupe_state==='remove'?'<span class="b bad">entfernen</span>':''}
+      <button class="small" data-play="${s.id}">ansehen</button> <button class="small primary" data-keep="${s.id}" data-id="${s.id}">diese behalten</button></td></tr>`).join('')}</tbody></table></div>`}).join('')||'<p class="mute">Keine offenen Dubletten.</p>';
+}
+$('#donlyopen').oninput=render;
+$('#dupelist').onclick=async e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.play){detail(+b.dataset.play);return}
+  const k=b.dataset.keep;await api('/api/decision',{method:'POST',body:{id:+b.dataset.id,keep:k===''?null:k==='both'?'both':+k}});load();
+};
+
+/* ---------- Discs einlesen ---------- */
+try{$('#impdir').value=localStorage.getItem('impdir')||''}catch(e){}
+$('#implist').onclick=async()=>{
+  try{localStorage.setItem('impdir',$('#impdir').value)}catch(e){}
+  $('#impfiles').innerHTML='<p class="mute">suche …</p>';
+  const r=await api('/api/import/list?dir='+encodeURIComponent($('#impdir').value));
+  if(!r.ok){$('#impfiles').innerHTML=`<p class="err">${esc(r.error)}</p>`;return}
+  $('#impfiles').innerHTML=r.files.length?`<div class="box"><table><thead><tr><th><input type="checkbox" id="impall"></th><th>Abbild</th><th>Größe</th><th>Status</th></tr></thead><tbody>${r.files.map(f=>`<tr><td><input type="checkbox" data-imp="${esc(f.path)}"></td><td class="t">${esc(f.name)}<br><small class="mute">${esc(f.path)}</small></td><td>${f.gb} GB</td><td>${f.imported?'<span class="b ok">schon eingelesen</span>':'<span class="b warn">neu</span>'}</td></tr>`).join('')}</tbody></table></div>
+   <div class="row" style="margin-top:10px" id="improw"><label><input type="checkbox" id="impbuild" checked> danach PS4-Pakete für neue Songs bauen</label>${targetPick()}<button class="primary" id="impgo">Ausgewählte einlesen</button><span class="mute">PS3: ca. 5–10 min je Disc, PS2: ca. 1–3 min.</span></div>`
+   :'<p class="mute">Keine SingStar-Abbilder (.iso/.7z) in diesem Ordner.</p>';
+  const all=$('#impall');if(all)all.onchange=e=>document.querySelectorAll('[data-imp]').forEach(c=>c.checked=e.target.checked);
+  const go=$('#impgo');if(go)go.onclick=async()=>{const paths=[...document.querySelectorAll('[data-imp]:checked')].map(c=>c.dataset.imp);
+    if(!paths.length)return;const r=await api('/api/import',{method:'POST',body:{paths,build:$('#impbuild').checked,targets:pickedTargets($('#improw'))}});r.ok?watch(r.job):$('#msg').textContent=r.error};
+};
+
+/* ---------- Wunschliste ---------- */
+let wish=[];
+async function renderWish(){ucheckState();if(!$('#dltg').querySelector('[data-tgtpick]'))$('#dltg').innerHTML=targetPick();
+  wish=await api('/api/wishlist');
+  $('#wlist').innerHTML=wish.length?`<div class="box"><div class="row" style="padding:8px 10px"><button class="small primary" id="wdlsel">Ausgewählte laden</button><span class="mute" style="font-size:12px">Häkchen bei Songs mit gemerktem USDB-Eintrag; geladen wird nacheinander in einem Auftrag.</span></div><table><thead><tr><th><input type="checkbox" id="wselall" title="alle mit USDB-Eintrag"></th><th>Interpret</th><th>Titel</th><th>Notiz</th><th>Status</th><th>USDB</th><th></th></tr></thead><tbody>${wish.map(w=>`<tr>
+    <td>${w.usdb?`<input type="checkbox" data-wsel="${w.usdb.id}">`:''}</td><td class="t">${esc(w.artist)}</td><td class="t">${esc(w.title)}</td><td class="t mute">${esc(w.note)}</td>
+    <td>${w.have?`<span class="b ok" data-open="${w.have}">in Bibliothek</span>`:'<span class="b warn">fehlt</span>'}</td>
+    <td>${w.usdb?`<a href="${esc(w.usdb.url)}" target="_blank" rel="noopener">#${w.usdb.id}</a> <button class="small primary" data-dl="${w.usdb.id}">${w.downloaded?'erneut laden':'laden'}</button>`:''} <button class="small" data-ws="${w.id}">suchen</button></td>
+    <td><button class="small danger" data-wd="${w.id}">entfernen</button></td></tr><tr hidden id="wr${w.id}"><td colspan="7"></td></tr>`).join('')}</tbody></table></div>`
+    :'<p class="mute">Die Wunschliste ist leer. Oben Interpret und Titel eintragen.</p>';
+}
+/* USDB results: sortable columns; every result table keeps its rows here (table id -> {rows, wid, k, dir}) */
+const UT={};let utN=0;
+const UCOLS=[['artist','Interpret'],['title','Titel'],['edition','Edition'],['language','Sprache'],['year','Jahr'],['golden','Goldene Noten'],['rating','Bewertung'],['views','Aufrufe'],['have','Bibliothek']];
+function usdbTable(res,wid){
+  if(!res.ok)return`<p class="err">${esc(res.error)}</p>${res.error.includes('Zugangsdaten')?'<p class="mute">In den Einstellungen USDB-Name und Passwort eintragen.</p>':''}`;
+  if(!res.results.length)return'<p class="mute">Nichts gefunden.</p>';
+  const lib=new Set(data.songs.map(x=>norm(x.artist)+'|'+norm(x.title)));
+  res.results.forEach(r=>r.have=lib.has(norm(r.artist)+'|'+norm(r.title)));
+  const id='ut'+(++utN);UT[id]={rows:res.results,wid,k:'rating',dir:-1,sel:new Set()};
+  return utHtml(id);
+}
+function utHtml(id){
+  const t=UT[id],num=['rating','views','year'].includes(t.k);
+  const v=r=>t.k==='golden'?(r.golden==='Ja'?1:0):t.k==='have'?(r.have?1:0):num?(+r[t.k]||0):String(r[t.k]??'');
+  const rows=[...t.rows].sort((a,b)=>{const x=v(a),y=v(b);return(typeof x==='number'?x-y:x.localeCompare(y,LOC()))*t.dir});
+  return `<div id="${id}"><div class="row" style="margin:4px 0"><span class="mute">${rows.length} Treffer</span><button class="small primary" data-udl="${id}">Ausgewählte laden${t.sel.size?` (${t.sel.size})`:''}</button></div><table><thead><tr><th><input type="checkbox" data-uall="${id}" ${t.sel.size&&t.sel.size===rows.length?'checked':''}></th>${UCOLS.map(([k,l])=>`<th data-us="${id}" data-k2="${k}"><span>${l}</span>${t.k===k?`<span>${t.dir>0?' ▲':' ▼'}</span>`:''}</th>`).join('')}<th></th></tr></thead><tbody>${rows.map(r=>`<tr>
+    <td><input type="checkbox" data-usel="${id}" data-uid="${r.id}" ${t.sel.has(r.id)?'checked':''}></td><td class="t">${esc(r.artist)}</td><td class="t">${esc(r.title)}</td><td class="mute t">${esc(r.edition)}</td><td class="mute">${esc(r.language)}</td><td class="mute">${esc(r.year)}</td>
+    <td>${r.golden==='Ja'?'✓':''}</td><td title="${r.rating}">${'★'.repeat(Math.floor(r.rating))}${r.rating%1?'½':''}</td><td class="mute">${r.views}</td><td>${r.have?'<span class="b ok">vorhanden</span>':''}</td>
+    <td><a href="${esc(r.url)}" target="_blank" rel="noopener">öffnen</a> <button class="small primary" data-dl="${r.id}">laden</button> ${t.wid?`<button class="small" data-pick='${esc(JSON.stringify({wid:t.wid,usdb:{id:r.id,url:r.url,artist:r.artist,title:r.title}}))}'>merken</button>`:
+    `<button class="small" data-addr='${esc(JSON.stringify({artist:r.artist,title:r.title,usdb:{id:r.id,url:r.url}}))}'>auf Wunschliste</button>`}</td></tr>`).join('')}</tbody></table></div>`;
+}
+document.addEventListener('click',e=>{const t0=e.target;
+  if(t0.dataset.usel){const t=UT[t0.dataset.usel],i=+t0.dataset.uid;t0.checked?t.sel.add(i):t.sel.delete(i);
+    document.querySelector(`[data-udl="${t0.dataset.usel}"]`).textContent='Ausgewählte laden'+(t.sel.size?` (${t.sel.size})`:'');return}
+  if(t0.dataset.uall){const t=UT[t0.dataset.uall];t.sel=t0.checked?new Set(t.rows.map(r=>r.id)):new Set();document.getElementById(t0.dataset.uall).outerHTML=utHtml(t0.dataset.uall);return}
+  if(t0.dataset.udl){const t=UT[t0.dataset.udl];if(!t.sel.size){$('#msg').textContent='Erst Songs ankreuzen.';return}usdbDownload([...t.sel]);t.sel.clear();document.getElementById(t0.dataset.udl).outerHTML=utHtml(t0.dataset.udl);return}
+  if(t0.id==='wselall'){document.querySelectorAll('[data-wsel]').forEach(c=>c.checked=t0.checked);return}
+  if(t0.id==='wdlsel'){const ids=[...document.querySelectorAll('[data-wsel]:checked')].map(c=>+c.dataset.wsel);if(!ids.length){$('#msg').textContent='Erst Songs ankreuzen.';return}usdbDownload(ids);return}
+  const th=e.target.closest('th[data-us]');if(!th)return;const t=UT[th.dataset.us],k=th.dataset.k2;
+  t.dir=t.k===k?-t.dir:(['rating','views','year','golden','have'].includes(k)?-1:1);t.k=k;document.getElementById(th.dataset.us).outerHTML=utHtml(th.dataset.us)});
+async function usdbDownload(ids){
+  if(!ids.length){$('#msg').textContent='Keine gemerkten USDB-Songs – erst suchen und „merken“.';return}
+  const r=await api('/api/usdb/download',{method:'POST',body:{ids,build:$('#dlbuild').checked,video:$('#dlvideo').checked,targets:pickedTargets($('#dltg'))}});
+  if(!r.ok){$('#msg').textContent=r.error;return}watch(r.job)}
+async function ucheckState(){const st=await api('/api/usdb/check');$('#ucheckt').textContent=st.last_check?`zuletzt ${ago(st.last_check)} (automatisch alle 6 h)`:'noch nie geprüft'}
+$('#ucheck').onclick=async()=>{$('#ucheck').disabled=true;$('#ucheck').textContent='prüft …';
+  const r=await api('/api/usdb/check',{method:'POST',timeout:300000});$('#ucheck').disabled=false;$('#ucheck').textContent='Auf USDB-Updates prüfen';
+  $('#msg').textContent=r.ok?(r.found.length?`${r.found.length} Song(s) haben eine neue USDB-Version (siehe Baustellen)`:'Keine neuen USDB-Versionen.'):r.error;ucheckState();load()};
+$('#uinfo').onclick=async()=>{const r=await api('/api/usdb/info',{method:'POST',body:{refresh:false}});r.ok?watch(r.job):$('#msg').textContent=r.error};
+$('#dlall').onclick=()=>usdbDownload(wish.filter(w=>w.usdb&&!w.have).map(w=>w.usdb.id));
+$('#wadd').onclick=async()=>{const r=await api('/api/wishlist',{method:'POST',body:{artist:$('#wa').value,title:$('#wt').value,note:$('#wn').value}});
+  if(r.ok===false){$('#msg').textContent=r.error;return}['#wa','#wt','#wn'].forEach(s=>$(s).value='');renderWish()};
+$('#wsearch').onclick=async()=>{$('#wres').innerHTML='<p class="mute">suche …</p>';$('#wres').innerHTML=usdbTable(await api('/api/usdb/search',{method:'POST',body:{artist:$('#wa').value,title:$('#wt').value}}))};
+document.addEventListener('click',async e=>{
+  const t=e.target;
+  if(t.dataset.wd){await api('/api/wishlist?id='+t.dataset.wd,{method:'DELETE'});renderWish()}
+  if(t.dataset.ws){const w=wish.find(x=>x.id==t.dataset.ws),row=$('#wr'+w.id);row.hidden=false;row.firstElementChild.innerHTML='<p class="mute">suche …</p>';
+    row.firstElementChild.innerHTML=usdbTable(await api('/api/usdb/search',{method:'POST',body:{artist:w.artist,title:w.title}}),w.id)}
+  if(t.dataset.pick){const p=JSON.parse(t.dataset.pick);await api('/api/wishlist/'+p.wid,{method:'POST',body:{usdb:p.usdb}});renderWish()}
+  if(t.dataset.addr){await api('/api/wishlist',{method:'POST',body:JSON.parse(t.dataset.addr)});$('#wres').innerHTML='';renderWish()}
+  if(t.dataset.open)detail(+t.dataset.open);
+  if(t.dataset.dl)usdbDownload([+t.dataset.dl]);
+});
+
+/* ---------- Konsolen ---------- */
+async function renderCons(){
+  $('#conboxes').innerHTML=conAct().map(c=>`<div class="box pad"><h2><span class="dot ${c.online?'on':''}" style="display:inline-block"></span> ${esc(c.name)} <small class="mute">${c.type.toUpperCase()} · ${esc(c.host)}:${c.port}</small></h2>`
+    +(c.type==='ps4'?(c.time?`<dl class="form"><dt>Gelesen</dt><dd>${ago(c.time)}</dd><dt>Installiert</dt><dd>${c.installed} Songs</dd><dt>In /data/pkg</dt><dd>${c.pending} Pakete</dd><dt>Frei (/data)</dt><dd>${c.free!=null?gb(c.free):'<span class="mute">vom FTP-Server nicht gemeldet</span>'}</dd></dl>
+      ${c.disc?`<h3>Disc-Pack (ohne PKG)</h3><dl class="form"><dt>Songs</dt><dd>${c.disc.uploaded} übertragen${c.disc.pending?`, <span class="lvl-warn">Änderungen offen (${c.disc.songs} gewünscht)</span>`:''}</dd>
+        <dt>Größe</dt><dd>${c.disc.size!=null?Math.round(c.disc.size/2**20)+' MB':'–'}</dd><dt>Zuletzt</dt><dd>${c.disc.time?ago(c.disc.time):'noch nie'}</dd></dl>
+        <p class="mute">Übertragen geht, sobald die PS4 erreichbar ist (SingStar muss nicht laufen); offene Änderungen werden dann automatisch übertragen. Danach SingStar neu starten.</p>
+        <div class="row"><button data-dsetup="${c.id}">Disc-Lader einrichten (GoldHEN-Patch)</button><button data-dup="${c.id}">Disc-Pack jetzt übertragen</button></div>`:''}
+      <h3>Fehlermeldung beim Start</h3><p class="mute">SingStar zeigt beim Start „Ein Fehler ist aufgetreten (SU-41766-4)“ bzw. NW-31201-7 (PSN-Server abgeschaltet). Ein GoldHEN-Spielpatch blendet diese System-Fehlermeldungen aus; wirksam nach Neustart von SingStar.</p>
+      <p><span>Status:</span> ${{on:'<span class="lvl-info">ausgeblendet (Patch an)</span>',off:'Meldung erscheint (Patch aus)',missing:'Meldung erscheint (Patch nicht eingetragen)'}[c.nodialog]||'<span class="mute">unbekannt – „Lesen“</span>'}</p>
+      <div class="row">${c.nodialog==='on'?`<button data-nodlg="${c.id}" data-on="0">Meldung wieder anzeigen</button>`:`<button data-nodlg="${c.id}" data-on="1">Fehlermeldung beim Start ausblenden</button>`}</div>
+      <h3>/data/pkg aufräumen</h3>${c.cleanup.length?`<p>${c.cleanup.length} Pakete in /data/pkg sind schon installiert und können gelöscht werden.</p><button class="danger" data-cleanup="${c.id}">${c.cleanup.length} installierte Pakete aus /data/pkg löschen</button>`:'<p class="mute">Nichts aufzuräumen.</p>'}`
+      :'<p class="mute">Noch nicht gelesen. PS4 einschalten, GoldHEN-FTP aktiv, dann „Lesen“ (oder automatisch, sobald sie online ist).</p>')
+    :(c.time?`<dl class="form"><dt>Gelesen</dt><dd>${ago(c.time)}</dd><dt>Song-Ordner</dt><dd>${c.songs}</dd><dt>Frei</dt><dd>${c.free!=null?gb(c.free):'<span class="mute">nicht ermittelbar</span>'}</dd></dl>`:'<p class="mute">Noch nicht gelesen.</p>')
+      +(c.unlisted?.length?`<h3 class="lvl-warn">Nicht eingetragen</h3><p>${c.unlisted.length} Songs liegen auf der PS3, fehlen aber in der Songliste – SingStar zeigt sie nicht (Übertragung wurde abgebrochen). Beim Eintragen werden vorhandene Dateien übersprungen, das geht schnell.</p><button class="primary" data-unl="${c.id}">${c.unlisted.length} Songs eintragen</button>`:'')
+      +(c.queued?`<h3>Vorgemerkt</h3><p>${c.queued} neue Songs warten auf die Übertragung. Die PS3 wird nie automatisch beschrieben oder gelesen (stört SingStar) – übertragen, wenn gerade niemand singt.</p><button class="primary" data-drun="${c.id}">Vorgemerkte übertragen</button>`:'')
+      +`<h3>Prüfen</h3><p class="mute">SingStar Fixer: prüft die Song-XMLs auf der PS3 (nur lesen, nichts wird geändert).</p><button data-fixer="${c.id}">PS3 prüfen</button>`)+'</div>').join('')
+    ||'<p class="mute">Keine Konsole eingerichtet. In den Einstellungen PS3 oder PS4 hinzufügen.</p>';
+  $('#conboxes').onclick=async e=>{
+    const un=e.target.closest('[data-unl]');
+    if(un){const c=conAll().find(x=>x.id===un.dataset.unl);const r=await api('/api/ps3/write',{method:'POST',body:{ids:c.unlisted,consoles:[c.id]}});r.ok?watch(r.job):$('#msg').textContent=r.error;return}
+    const dr=e.target.closest('[data-drun]');
+    if(dr){const r=await api('/api/deploy/run',{method:'POST',body:{console:dr.dataset.drun}});r.ok?watch(r.job):$('#msg').textContent=r.error;load();return}
+    const nd=e.target.closest('[data-nodlg]'),cl=e.target.closest('[data-cleanup]'),fx=e.target.closest('[data-fixer]'),ds=e.target.closest('[data-dsetup]'),du=e.target.closest('[data-dup]');
+    if(nd){const on=nd.dataset.on==='1';
+      if(on&&!await ask(`<h3>Fehlermeldung beim Start ausblenden?</h3><p>Trägt den GoldHEN-Spielpatch „No online check error at startup“ für SingStar (v01.10) in <code>/data/GoldHEN/patches/xml/CUSA00033.xml</code> ein und schaltet ihn ein (vorhandene Datei wird vorher gesichert). SingStar öffnet dann keine System-Fehlermeldungen mehr (offline sind das nur PSN-/Netzfehler); die Kacheln „OFFLINE“ bleiben. Voraussetzung: Plugin <code>game_patch.prx</code> und in GoldHEN eingeschalteter Plugin-Lader. Danach SingStar neu starten.</p>`,'Ausblenden'))return;
+      const r=await api('/api/ps4/nodialog',{method:'POST',body:{console:nd.dataset.nodlg,on}});
+      await ask(r.ok?`<h3>Fehlermeldung beim Start</h3><ul>${r.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul>`:`<p class="err">${esc(r.error)}</p>`,'OK');load();return}
+    if(ds){if(!await ask(`<h3>Disc-Lader einrichten?</h3><p>Trägt den GoldHEN-Spielpatch für SingStar (v01.10) in <code>/data/GoldHEN/patches/xml/CUSA00033.xml</code> ein und schaltet ihn ein (vorhandene Datei wird vorher gesichert). Er lässt SingStar Songs aus <code>download0/Pack0.psarc</code> laden (Verweis auf <code>/user/av_contents/video/ss/Pack0.psarc</code>; den legt der Manager bei laufendem SingStar mit der Payload <code>dl0link.elf</code> an – dafür muss in GoldHEN der BinLoader an sein). Voraussetzung: Plugin <code>game_patch.prx</code> und in GoldHEN eingeschalteter Plugin-Lader. Danach SingStar neu starten – Meldung „1 Patch Applied“.</p>`,'Einrichten'))return;
+      const r=await api('/api/ps4/discsetup',{method:'POST',body:{console:ds.dataset.dsetup}});
+      await ask(r.ok?`<h3>Disc-Lader</h3><ul>${r.notes.map(n=>`<li>${esc(n)}</li>`).join('')}</ul>`:`<p class="err">${esc(r.error)}</p>`,'OK');return}
+    if(du){const r=await api('/api/ps4/discpack',{method:'POST',body:{console:du.dataset.dup,upload:true}});
+      if(!r.ok){$('#msg').textContent=r.error;return}if(r.job)watch(r.job);else $('#msg').textContent=r.note||'Nichts zu übertragen.';return}
+    if(cl){const c=conAll().find(x=>x.id===cl.dataset.cleanup);
+      if(!await ask(`<h3>${c.cleanup.length} Pakete löschen?</h3><p>${esc(c.name)}: Diese Pakete liegen in <code>/data/pkg</code> und sind laut PS4 schon installiert. Die installierten Songs bleiben erhalten.</p><pre class="log">${esc(c.cleanup.join('\n'))}</pre>`,'Löschen'))return;
+      const r=await api('/api/ps4/cleanup',{method:'POST',body:{console:c.id,names:c.cleanup}});$('#msg').textContent=r.ok?'':r.error;load()}
+    if(fx){const r=await api('/api/ps3/fixer?console='+encodeURIComponent(fx.dataset.fixer),{method:'POST'});r.ok?watch(r.job):$('#msg').textContent=r.error}};
+  const jobs=await api('/api/jobs');
+  $('#joblist').innerHTML=jobs.length?jobs.map(j=>`<details><summary>${esc(j.title)} – ${j.finished?(j.errors.length?'<span class="err">Fehler</span>':'<span class="lvl-info">fertig</span>'):'läuft'}</summary>${j.errors.length?`<p class="err">${esc(j.errors.join(' · '))}</p>`:''}<pre class="log">${esc(j.log.join('\n')||j.done.join('\n'))}</pre></details>`).join(''):'<p class="mute">Keine Aufgaben in dieser Sitzung.</p>';
+  const h=await api('/api/history');
+  $('#hist').innerHTML=h.map(x=>`<tr><td class="mute">${new Date(x.time*1000).toLocaleString(LOC())}</td><td>${esc(x.kind)}</td><td class="t">${esc(x.text)}${x.added?.length?`<br><small class="mute">neu: ${x.added.slice(0,30).join(', ')}${x.added.length>30?' …':''}</small>`:''}${x.removed?.length?`<br><small class="mute">weg: ${x.removed.slice(0,30).join(', ')}</small>`:''}</td></tr>`).join('')||'<tr><td class="mute">Noch kein Verlauf.</td></tr>';
+}
+
+/* ---------- Detail ---------- */
+let cur=null,lyr=null,raf=0;
+async function detail(id){
+  const d=$('#detail');const row=data.songs.find(s=>s.id===id);
+  const r=await fetch('/api/song/'+id);
+  if(!r.ok){d.innerHTML=`<button id="dclose" class="xclose" aria-label="Schließen" title="Schließen (Esc)"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><h2>${esc(row?.title)}</h2><p class="mute">${esc(row?.artist)} · nur auf ${esc((row?.only_on||[row?.only_console]).map(cname).join(', '))} (ID ${row?.id}${row?.label?', '+esc(row.label):''}), nicht in der PC-Bibliothek.</p>
+    ${row?.only_console?'<button class="primary" id="dpull">Auf den PC holen</button>':''}`;
+    $('#dclose').onclick=closeDetail;const dp=$('#dpull');if(dp)dp.onclick=()=>pullSongs([row]);d.classList.add('show');return}
+  const s=cur=await r.json();
+  const us=s.sources.ultrastar,h=s.meta;
+  const dl=[['PS4-ID / Label',s.id>0?`${s.id} / ${s.label}`:'noch keine'],['PS3-ID',s.ps3_id??'–']];
+  for(const[k,v]of Object.entries(s.meta))dl.push([k,v]);
+  for(const[k,v]of Object.entries(s.sources))dl.push(['Quelle '+SRC[k],v.folder||v.dir||v.disc||'']);
+  for(const[k,p]of Object.entries(s.pkgs)){dl.push(['Paket '+SRC[k],`${p.mb} MB · ${p.file.split(/[\\/]/).pop()}`]);
+    for(const[rk,rv]of Object.entries(p.report||{}))if(!['song','id','label','ok','iso','disc','ps4','mb'].includes(rk))dl.push(['  '+rk,rv]);}
+  const inst4=conOf('ps4').filter(c=>row?.on?.[c.id]==='installed'),miss4=conOf('ps4').filter(c=>!HAVE4.includes(row?.on?.[c.id]));
+  const disc4=conOf('ps4').filter(c=>c.disc&&['disc','queued'].includes(row?.on?.[c.id]));
+  d.innerHTML=`<button id="dclose" class="xclose" aria-label="Schließen" title="Schließen (Esc)"><svg viewBox="0 0 14 14" aria-hidden="true"><path d="M2 2L12 12M12 2L2 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button><div class="row"><span>${srcB(row||{sources:Object.keys(s.sources)})} ${row?conRead().filter(c=>row.on?.[c.id]).map(c=>`<small class="mute">${esc(c.name)}</small> ${onB(row,c.id)}`).join(' '):''}</span></div>
+  <div class="dhead">${row?.cover?`<img src="/api/cover/${s.id}" onerror="this.remove()">`:''}<div><h2>${esc(s.title)}</h2><div>${esc(s.artist)}</div>
+   <div style="margin-top:6px">${s.editions.map(e=>`<span class="b no">${esc(e)}</span>`).join('')}</div></div></div>
+  ${s.issues.length?`<h3>Baustellen</h3>${s.issues.map(i=>`<div class="lvl-${i.level}">• ${esc(i.text)}</div>`).join('')}`:''}
+  ${s.media.length?`<h3>Vorschau &amp; Timing</h3><div class="player"><div class="row">${s.media.includes('us')?'<button class="small" data-m="us">UltraStar</button>':''}${s.media.includes('ps3disc')?'<button class="small" data-m="ps3disc">PS3-Disc</button>':''}${s.media.includes('ps3')?'<button class="small" data-m="ps3">PS3-Bibliothek</button>':''}${s.media.includes('ps3ver')?'<button class="small" data-m="ps3ver">PS3-Fassung</button>':''}${s.media.includes('pkg')?'<button class="small" data-m="pkg" title="aus dem fertigen PS4-Paket – beim ersten Abspielen wird es entpackt (einige Sekunden)">PS4-Paket</button>':''}</div><div id="pl"></div></div>`:''}
+  ${row?.user?`<h3>Gesungen &amp; Favoriten</h3><dl>
+    <dt>Favorit</dt><dd>${row.user.fav?esc(Object.keys(row.user.fav).map(cname).join(' und ')):'nein'}</dd>
+    <dt>Gesungen</dt><dd>${row.user.plays?`${row.user.plays}× (${esc(Object.entries(row.user.plays_by||{}).map(([c,n])=>`${cname(c)} ${n}`).join(', '))}) · zuletzt ${dateD(row.user.last)}`:'noch nie'}</dd>
+    ${row.user.best?`<dt>Bestwert</dt><dd>${row.user.best.toLocaleString(LOC())} Punkte · ${esc(row.user.best_player||'')} (${esc(cname(row.user.best_console))}, ${dateD(row.user.best_date)})</dd>`:''}</dl>
+    ${s.charts?.length?`<table class="charts"><thead><tr><th>#</th><th>Spieler</th><th>Punkte</th><th>Konsole</th><th>Datum</th></tr></thead><tbody>${s.charts.slice(0,10).map((e,i)=>`<tr><td>${i+1}</td><td>${esc(e.player)}</td><td>${e.score.toLocaleString(LOC())}</td><td>${esc(cname(e.console))}</td><td>${dateD(e.date)}</td></tr>`).join('')}</tbody></table>`:''}`:''}
+  ${s.usdb?`<h3>USDB</h3>${s.usdb.update?`<p class="lvl-warn"><b>Neue Version bei USDB</b> vom ${new Date(s.usdb.update.lastchange*1000).toLocaleString(LOC())} (deine Fassung: ${new Date(s.usdb.downloaded*1000).toLocaleDateString(LOC())}).
+    <button class="small primary" id="dupd">Neu von USDB laden + PS4-Paket neu bauen</button></p>`:''}<dl>
+    <dt>Bewertung</dt><dd><b>${stars(s.usdb.rating)}</b> ${s.usdb.rating} (${s.usdb.votes} Stimmen) · ${s.usdb.views} Aufrufe</dd>
+    <dt>Geprüft</dt><dd>${s.usdb.songcheck?'Songcheck ja':'kein Songcheck'} · goldene Noten ${s.usdb.golden?'ja':'nein'}</dd>
+    <dt>Von</dt><dd>${esc(s.usdb.creator)} · ${esc(s.usdb.date)} · <a href="${esc(s.usdb.url)}" target="_blank" rel="noopener">auf USDB öffnen</a></dd>
+    <dt>Kommentare</dt><dd>${s.usdb.comments.length?s.usdb.comments.slice(0,6).map(c=>`<div class="${s.usdb.problem_hints.some(p=>p.text===c.text)?'lvl-warn':(s.usdb.gap_hints||[]).some(p=>p.text===c.text)?'lvl-info':''}">${c.mood==='positiv'?'👍':c.mood==='negativ'?'👎':'·'} <small class="mute">${esc(c.date)} ${esc(c.user)}</small> ${esc(c.text)}</div>`).join(''):'keine'}</dd></dl>`:''}
+  ${s.can_edit?`<h3>Bearbeiten (UltraStar-Datei)</h3><div class="form" id="ef">
+    ${['artist','title','year','genre','language'].map(k=>`<label>${{artist:'Interpret',title:'Titel',year:'Jahr',genre:'Genre',language:'Sprache'}[k]}</label><input data-f="${k}" value="${esc(k==='artist'?s.artist:k==='title'?s.title:h[k]||'')}">`).join('')}
+    </div><div class="row"><button class="primary" id="esave">Speichern</button><span class="mute" id="emsg">Änderungen gehen in die .txt (mit Sicherung). Danach „Neu bauen“.</span></div>`:''}
+  <h3>Aktionen</h3><div class="row">
+    ${Object.entries(s.sources).filter(([k,v])=>!v.skip).map(([k])=>`<button data-rb="${k}">${s.id<0?'Umwandeln':s.pkg?'Neu bauen':'PS4-Paket bauen'} (${SRC[k]})</button>`).join('')}
+    ${s.pkg&&miss4.length?'<button id="dup">Auf PS4 hochladen</button>':''}
+    ${s.pkg&&inst4.length?'<button class="danger" id="drep">Auf PS4 ersetzen</button>':''}
+    ${disc4.length?'<button class="danger" id="ddisc">Aus Disc-Pack entfernen</button>':''}
+    ${row?.ps3src&&conOf('ps3').length?`<button id="dps3">${conOf('ps3').some(c=>row.on?.[c.id]==='yes')?'Auf PS3 ersetzen':'Auf PS3 übertragen'}</button>`:''}
+    <button id="dwish" title="Für eine bessere Fassung auf die Wunschliste">Auf Wunschliste</button></div>
+  <h3>Details</h3><dl>${dl.map(([a,b])=>`<dt>${esc(a)}</dt><dd>${esc(b)}</dd>`).join('')}</dl>`;
+  $('#dclose').onclick=closeDetail;d.classList.add('show');d.scrollTop=0;
+  d.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>player(b.dataset.m));
+  if(s.media.length)player(['us','ps3disc','ps3','ps3ver','pkg'].find(k=>s.media.includes(k)));
+  d.querySelectorAll('[data-rb]').forEach(b=>b.onclick=async()=>{
+    if(!await ask(`<h3>${s.id<0?'Umwandeln':'Neu bauen'}?</h3><p>${esc(s.artist)} – ${esc(s.title)} aus der Quelle ${SRC[b.dataset.rb]}. Das alte Paket wird nach <code>pkgs_old/</code> verschoben. Dauert je nach Song 1–5 Minuten.</p>`,'Bauen'))return;
+    const r=await api(`/api/song/${s.id}/rebuild`,{method:'POST',body:{source:b.dataset.rb}});r.ok?watch(r.job):$('#msg').textContent=r.error});
+  const up=$('#dup');if(up)up.onclick=()=>{sel=new Set([s.id]);uploadSel(miss4)};
+  const rp=$('#drep');if(rp)rp.onclick=async()=>{
+    if(!await ask(`<h3>Auf der PS4 ersetzen?</h3><p><b>SingStar muss geschlossen sein.</b> Das installierte Paket <code>${esc(s.label)}/ac.pkg</code> wird mit dem aktuellen Paket vom PC überschrieben (${s.pkg.mb} MB).</p>${targetBoxes(inst4)}`,'Ersetzen'))return;
+    const r=await api(`/api/song/${s.id}/replace_ps4`,{method:'POST',body:{consoles:readTargets(inst4)}});r.ok?(r.jobs||[r.job]).forEach(watch):$('#msg').textContent=r.error};
+  const du=$('#dupd');if(du)du.onclick=async()=>{
+    if(!await ask(`<h3>Neue USDB-Fassung laden?</h3><p>Text, Audio, Video und Cover werden neu geladen, danach wird das PS4-Paket neu gebaut. Die bisherige .txt wird vorher gesichert (eigene GAP- oder Textänderungen gehen sonst verloren). Auf PS4/PS3 danach mit „ersetzen“ austauschen.</p>`,'Neu laden'))return;
+    const r=await api('/api/usdb/download',{method:'POST',body:{ids:[s.usdb.id],force:true,build:true,video:true}});r.ok?watch(r.job):$('#msg').textContent=r.error};
+  const d3=$('#dps3');if(d3)d3.onclick=()=>ps3Write([row]);
+  const dd=$('#ddisc');if(dd)dd.onclick=async()=>{
+    if(!await ask(`<h3>Aus dem Disc-Pack entfernen?</h3><p>${esc(s.artist)} – ${esc(s.title)}. Das Disc-Pack wird ohne diesen Song neu gebaut und übertragen (sofort, wenn die PS4 erreichbar ist, sonst sobald sie online ist). Danach SingStar neu starten.</p>${targetBoxes(disc4)}`,'Entfernen'))return;
+    for(const cid of readTargets(disc4)){const r=await api('/api/ps4/discpack',{method:'POST',body:{console:cid,remove:[s.id]}});
+      if(!r.ok){$('#msg').textContent=r.error;continue}if(r.job)watch(r.job);else if(r.note)$('#msg').textContent=`${cname(cid)}: ${r.note}`}
+    load()};
+  $('#dwish').onclick=async()=>{await api('/api/wishlist',{method:'POST',body:{artist:s.artist,title:s.title,note:'bessere Fassung suchen'}});$('#dwish').textContent='auf der Wunschliste ✓'};
+  const es=$('#esave');if(es)es.onclick=async()=>{const b={};$('#ef').querySelectorAll('[data-f]').forEach(i=>b[i.dataset.f]=i.value);
+    const r=await api(`/api/song/${s.id}/edit`,{method:'POST',body:b});$('#emsg').textContent=r.ok?(r.changed.length?'Gespeichert: '+r.changed.join('; '):'Keine Änderung'):r.error;if(r.ok&&r.changed.length)load()};
+}
+function closeDetail(){$('#detail').classList.remove('show');cancelAnimationFrame(raf);$('#detail').querySelectorAll('video,audio').forEach(m=>m.pause())}
+async function player(kind,note=''){
+  cancelAnimationFrame(raf);const s=cur,pl=$('#pl');
+  $('#detail').querySelectorAll('video,audio').forEach(m=>m.pause());
+  lyr=await api(`/api/lyrics/${s.id}/${kind}`);
+  if(kind==='us'){
+    const hasV=s.media.includes('usvideo');
+    pl.innerHTML=`${hasV?`<video id="pv" muted playsinline src="/api/media/${s.id}/usvideo"></video>`:''}<audio id="pa" controls style="width:100%" src="/api/media/${s.id}/us"></audio>
+    <div class="lyr" id="ly"></div>
+    <div class="row"><label>GAP <input type="range" id="off" min="${Math.max(0,lyr.gap-3000)}" max="${lyr.gap+3000}" step="10" value="${lyr.gap}" style="width:230px"></label>
+      <input type="number" id="offn" step="10" min="0" value="${lyr.gap}" style="width:95px"> ms <button class="small" id="offsave" disabled>GAP speichern</button></div>
+    <div style="font-size:12px" id="offinfo">${note?`<span class="lvl-info" style="color:var(--ok)">${esc(note)}</span><br>`:''}<span class="mute">Gespeichert: <b>${lyr.gap} ms</b> – der Regler steht immer auf dem gespeicherten Wert. Text zu früh → Regler nach rechts. Zum Probehören verschieben, dann „GAP speichern“.</span></div>`;
+    const a=$('#pa'),v=$('#pv'),vg=lyr.videogap||0;
+    const sync=()=>{if(v&&Math.abs(v.currentTime-(a.currentTime-vg))>.25)v.currentTime=Math.max(0,a.currentTime-vg)};
+    a.onplay=()=>{if(v){sync();v.play()}};a.onpause=()=>v&&v.pause();a.onseeked=sync;
+    const setG=g=>{g=Math.max(0,Math.round(g/10)*10);const o=$('#off');if(g<+o.min)o.min=g;if(g>+o.max)o.max=g;o.value=g;$('#offn').value=g;$('#offsave').disabled=g===lyr.gap};
+    $('#off').oninput=e=>setG(+e.target.value);$('#offn').onchange=e=>setG(+e.target.value);
+    $('#offsave').onclick=async()=>{const g=+$('#off').value;
+      if(!await ask(`<h3>#GAP ändern?</h3><p>${lyr.gap} ms → <b>${g} ms</b>. Die .txt wird gesichert und geändert, danach das Paket neu bauen.</p>`,'Übernehmen'))return;
+      const r=await api(`/api/song/${s.id}/edit`,{method:'POST',body:{gap:String(g)}});if(r.ok){player('us',`✓ GAP gespeichert: ${lyr.gap} → ${g} ms. Damit es im Spiel wirkt: PS4-Paket bzw. PS3-Fassung neu bauen und ersetzen.`);$('#msg').textContent='';load()}else $('#msg').textContent=r.error};
+    tick(a,()=>(+$('#off').value-lyr.gap)/1000);
+  }else{
+    pl.innerHTML=`<video id="pv" controls playsinline src="/api/media/${s.id}/${kind}"></video><div class="lyr" id="ly"></div>`;
+    tick($('#pv'),()=>0);
+  }
+}
+function tick(m,off){
+  const ly=$('#ly');let last='';
+  const f=()=>{if(!document.body.contains(ly))return;
+    const t=m.currentTime-off(),L=lyr.lines;let i=L.findIndex(l=>t<l.e+0.3);if(i<0)i=L.length-1;
+    const l=L[i],n=L[i+1];
+    const h=l?(t<l.t-4?`<span class="mute">♪ ${Math.ceil(l.t-t)} s</span>`:l.words.map(w=>`<span class="w ${t>=w[0]?'on':''}">${esc(w[2])}</span>`).join(''))+`<div class="nx">${n?esc(n.words.map(w=>w[2]).join('')):''}</div>`:'';
+    if(h!==last){ly.innerHTML=h;last=h}
+    raf=requestAnimationFrame(f)};
+  f();
+}
+
+/* ---------- Upload, Jobs ---------- */
+function updBar(){
+  const ss=data.songs.filter(s=>sel.has(s.id));const mb=ss.reduce((a,s)=>a+(s.pkg?.mb||0),0);
+  const miss=ss.filter(s=>!s.pkg).length,have=ss.length-miss;
+  $('#selinfo').textContent=`${ss.length} ausgewählt · ${have} mit Paket (${(mb/1024).toFixed(1)} GB)${miss?` · ${miss} ohne Paket`:''}`;
+  $('#build').textContent=miss?`${miss} PS4-Pakete bauen`:'Pakete neu bauen';$('#upload').disabled=!have;
+  const oc=ss.filter(s=>s.only_console).length;$('#pullb').hidden=!oc;$('#pullb').textContent=`${oc} auf den PC holen`;
+  const p3=ss.filter(s=>s.ps3src).length;$('#ps3w').disabled=!p3;$('#ps3w').textContent=p3?`${p3} auf PS3 übertragen`:'Auf PS3 übertragen';
+  $('#ps3w').hidden=!conOf('ps3').length;$('#upload').hidden=!conOf('ps4').length;
+  $('#selrow').hidden=!ss.length;
+  $('#bar').classList.toggle('show',ss.length>0||$('#jobs').children.length>0);
+}
+$('#upload').onclick=()=>uploadSel();
+$('#ps3w').onclick=()=>ps3Write(data.songs.filter(s=>sel.has(s.id)));
+$('#pullb').onclick=()=>pullSongs(data.songs.filter(s=>sel.has(s.id)&&s.only_console));
+async function pullSongs(ss){
+  const typ=s=>conAll().find(c=>c.id===s.only_console)?.type;
+  const p3=ss.filter(s=>typ(s)==='ps3'),p4=ss.filter(s=>typ(s)==='ps4');
+  if(!ss.length)return;
+  const body={};ss.forEach(s=>{if(typ(s))(body[s.only_console]??=[]).push(typ(s)==='ps3'?s.ps3_id:s.label)});
+  const off=Object.keys(body).filter(id=>!conAll().find(c=>c.id===id)?.online);
+  if(!await ask(`<h3>${ss.length} Songs auf den PC holen?</h3>
+    <p>${p3.length?`PS3: ${p3.length} Songs (Video, Melodie, Vorschau, Cover, Songlisten-Eintrag). `:''}${p4.length?`PS4: ${p4.length} Pakete. Offizielle Sony-Pakete sind verschlüsselt und lassen sich nicht übernehmen – nur eigene/fremde fPKGs.`:''}</p>
+    <p>Ziel: Ordner „Von Konsolen übernommen“ (Einstellungen). Danach sind es normale Quellen, z. B. für PS4-Pakete bzw. die PS3.</p>
+    ${off.length?`<p class="err">Gerade nicht erreichbar: ${esc(off.map(cname).join(', '))}</p>`:''}`,'Holen'))return;
+  const r=await api('/api/pull',{method:'POST',body});
+  if(!r.ok){$('#msg').textContent=r.error;return}sel.clear();r.jobs.forEach(watch);render()}
+async function ps3Write(ss){
+  const tg=conOf('ps3');if(!tg.length){$('#msg').textContent='Keine PS3 eingerichtet (Einstellungen).';return}
+  const ok=ss.filter(s=>s.ps3src),rep=ok.filter(s=>tg.some(c=>s.on?.[c.id]==='yes'));
+  if(!ok.length){$('#msg').textContent='Keiner der Songs lässt sich auf die PS3 übertragen (UltraStar, PS3-Disc oder PS2 nötig).';return}
+  const src={ultrastar:0,ps3disc:0,ps2:0};ok.forEach(s=>src[s.ps3src]++);
+  if(!await ask(`<h3>${ok.length} Songs auf die PS3 übertragen?</h3>
+   <p>Quelle: ${src.ultrastar} UltraStar (720p neu erzeugt), ${src.ps3disc} PS3-Disc (unverändert), ${src.ps2} PS2 (neu erzeugt). ${ss.length-ok.length?`${ss.length-ok.length} ausgewählte Songs haben keine passende Quelle und werden übersprungen.`:''}</p>
+   ${rep.length?`<p class="b warn">${rep.length} davon sind schon auf der PS3 und werden ersetzt (z. B. alte Toolbox-Fassungen).</p>`:''}
+   <p>Die Songlisten der PS3 werden vorher gesichert, nach dem Ändern geprüft und zurückgelesen. <b>SingStar danach neu starten.</b> ${tg.some(c=>c.online)?'':'<span class="err">PS3 ist gerade nicht erreichbar.</span>'}</p>${targetBoxes(tg)}`,'Übertragen'))return;
+  const r=await api('/api/ps3/write',{method:'POST',body:{ids:ok.map(s=>s.id),consoles:readTargets(tg)}});
+  if(!r.ok){$('#msg').textContent=r.error;return}sel.clear();watch(r.job);render()}
+$('#build').onclick=async()=>{
+  const ss=data.songs.filter(s=>sel.has(s.id)),miss=ss.filter(s=>!s.pkg);
+  const list=miss.length?miss:ss,only=!!miss.length;
+  if(!await ask(`<h3>${list.length} PS4-Pakete ${only?'bauen':'neu bauen'}?</h3><p>Die Konverter laufen im Hintergrund (je Song ca. 0,5–5 Minuten, 2 parallel). ${only?'':'Vorhandene Pakete werden nach <code>pkgs_old/</code> verschoben.'} Quelle je Song: UltraStar vor PS3-Disc vor PS3-Bibliothek vor PS2.</p>`,'Bauen'))return;
+  const r=await api('/api/build',{method:'POST',body:{ids:list.map(s=>s.id),missing_only:only}});
+  if(!r.ok){$('#msg').textContent=r.error;return}sel.clear();watch(r.job);render()};
+async function uploadSel(tg=conOf('ps4')){
+  if(!tg.length){$('#msg').textContent='Keine PS4 eingerichtet (Einstellungen).';return}
+  const ss=data.songs.filter(s=>sel.has(s.id)&&s.pkg),inst=ss.filter(s=>tg.some(c=>s.on?.[c.id]==='installed')),rm=ss.filter(s=>s.dupe_state==='remove');
+  const dT=tg.filter(c=>c.disc),pT=tg.filter(c=>!c.disc);
+  const mb=ss.reduce((a,s)=>a+(s.pkg?.mb||0),0);
+  const ok=await ask(`<h3>${ss.length} Pakete auf die PS4 hochladen?</h3>`+
+   (pT.length?`<p>${esc(pT.map(c=>c.name).join(', '))} (PKG): ${(mb/1024).toFixed(1)} GB nach <code>/data/pkg</code>, mit vollem Dateinamen. Danach im GoldHEN-Menü mit dem Paket-Installer alle installieren.</p>`:'')+
+   (dT.length?`<p>${esc(dT.map(c=>c.name).join(', '))} (Disc-Pack, ohne PKG): Songs kommen ins Disc-Pack (<code>/user/av_contents/video/ss</code>${data.consoles.some(c=>c.disc?.crf)?', Videos verkleinert':''}). Übertragung sofort, wenn die PS4 erreichbar ist, sonst sobald sie online ist; danach SingStar neu starten.</p>`:'')+
+   pT.filter(c=>c.free!=null).map(c=>`<p>${c.free<mb*2**20*2.1?'<span class="b bad">Knapp!</span> ':''}Frei auf ${esc(c.name)}: ${gb(c.free)} (Installation braucht kurzzeitig doppelt so viel).</p>`).join('')+
+   (inst.length?`<p class="b warn">${inst.length} davon sind schon installiert. Zum Austauschen stattdessen in den Details „Auf PS4 ersetzen“.</p>`:'')+
+   (rm.length?`<p class="b bad">${rm.length} davon sind als Dublette zum Entfernen markiert.</p>`:'')+
+   (tg.every(c=>c.time)?'':'<p class="mute">Hinweis: PS4 wurde noch nicht gelesen.</p>')+targetBoxes(tg),'Hochladen');
+  if(!ok)return;
+  const chosen=readTargets(tg),pk=chosen.filter(id=>pT.some(c=>c.id===id)),dk=chosen.filter(id=>dT.some(c=>c.id===id));
+  if(pk.length){const r=await api('/api/ps4/upload',{method:'POST',body:{ids:ss.map(s=>s.id),consoles:pk}});
+    if(!r.ok){$('#msg').textContent=r.error;return}(r.jobs||[r.job]).forEach(watch)}
+  for(const cid of dk){const r=await api('/api/ps4/discpack',{method:'POST',body:{console:cid,add:ss.map(s=>s.id)}});
+    if(!r.ok){$('#msg').textContent=r.error;continue}if(r.job)watch(r.job);else if(r.note)$('#msg').textContent=`${cname(cid)}: ${r.note}`}
+  sel.clear();load();
+}
+const watching=new Set();
+/* job bar: summary line; finished jobs without errors disappear after 10 s, with errors they stay until hidden */
+let jobsFolded=false;try{jobsFolded=localStorage.getItem('ssm-jobsfold')==='1'}catch(e){}
+function jobSummary(){const all=[...$('#jobs').children],run=all.filter(e=>!e.dataset.done).length,err=all.filter(e=>e.dataset.done==='err').length;
+  $('#jobhead').hidden=!all.length;$('#jobs').hidden=jobsFolded;$('#jobfold').textContent=jobsFolded?'▴ aufklappen':'▾ einklappen';
+  $('#jobsum').textContent=[run&&(run===1?'1 Auftrag läuft':`${run} Aufträge laufen`),all.length-run-err&&`${all.length-run-err} fertig`,err&&`${err} mit Fehler`].filter(Boolean).join(' · ');
+  $('#jobclear').hidden=all.length===run}
+function dropJob(el,jid){el.remove();watching.delete(jid);jobSummary();updBar()}
+$('#jobclear').onclick=()=>{[...$('#jobs').children].filter(e=>e.dataset.done).forEach(e=>{e.remove();watching.delete(+e.dataset.jid)});jobSummary();updBar()};
+$('#jobfold').onclick=()=>{jobsFolded=!jobsFolded;try{localStorage.setItem('ssm-jobsfold',jobsFolded?'1':'0')}catch(e){}jobSummary()};
+function watch(jid){if(watching.has(jid))return;watching.add(jid);
+  const el=document.createElement('div');el.className='job';el.dataset.jid=jid;$('#jobs').append(el);jobSummary();updBar();
+  const poll=async()=>{const s=await api('/api/jobs/'+jid);
+    el.innerHTML=`<b>${esc(s.title)}</b><div class="prog"><i style="width:${s.total?100*s.done_bytes/s.total:(s.finished?100:30)}%"></i></div>
+      <span class="mute">${s.finished?(s.errors.length?`<span class="err">Fehler: ${esc(s.errors.slice(0,2).join(' · '))}</span>`:'fertig'):esc(s.current||'')} ${s.total?(s.unit||s.title.includes('einlesen')?`${s.done_bytes} / ${s.total}`:`${gb(s.done_bytes)} / ${gb(s.total)}`):''}</span>
+      ${s.finished?'<button class="small">ausblenden</button>':'<button class="small">abbrechen</button>'}`;
+    el.querySelector('button').onclick=()=>{if(s.finished)dropJob(el,jid);else api(`/api/jobs/${jid}/cancel`,{method:'POST'})};
+    if(s.finished){el.dataset.done=s.errors.length?'err':'ok';jobSummary();load();if(s.next)watch(s.next);(s.nexts||[]).forEach(watch);
+      if(!s.errors.length)setTimeout(()=>{if(el.isConnected)dropJob(el,jid)},10000);return}
+    setTimeout(poll,1200)};
+  poll();
+}
+
+/* ---------- Kopf ---------- */
+$('#conshead').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-scan]');if(!b)return;
+  const c=b.dataset.scan;b.disabled=true;b.textContent='liest …';$('#msg').textContent='';
+  const j=await api('/api/scan/'+encodeURIComponent(c),{method:'POST'});
+  if(!j.ok)$('#msg').textContent=`${cname(c)} nicht erreichbar: ${j.error}`;
+  b.disabled=false;b.textContent='Lesen';load();
+});
+$('#rescan').onclick=async()=>{$('#rescan').disabled=true;$('#rescan').textContent='liest …';await api('/api/rescan/pc?editions=1',{method:'POST'});$('#rescan').disabled=false;$('#rescan').textContent='PC neu einlesen';load()};
+const settings=$('#settings');
+let setCons=[];
+function renderSetCons(){
+  $('#scons').innerHTML=setCons.length?`<table class="charts"><thead><tr><th>Name</th><th>Typ</th><th>IP</th><th>Port</th><th>Installation</th><th>aktiv</th><th></th></tr></thead><tbody>${setCons.map((c,i)=>`<tr data-i="${i}">
+    <td><input data-c="name" value="${esc(c.name)}" size="14"></td><td>${c.type.toUpperCase()}</td><td><input data-c="host" value="${esc(c.host)}" size="13" placeholder="192.168.1.x"></td>
+    <td><input data-c="port" value="${esc(c.port)}" size="5"></td>
+    <td>${c.type==='ps4'?`<select data-c="install" title="PKG: Pakete nach /data/pkg, Installation mit dem Paket-Installer von GoldHEN. Disc-Pack: ohne PKG über den GoldHEN-Spielpatch, ohne Größenlimit."><option value="pkg" ${c.install!=='disc'?'selected':''}>PKG (GoldHEN-Installer)</option><option value="disc" ${c.install==='disc'?'selected':''}>Disc-Pack (GoldHEN-Patch)</option></select>`:'<span class="mute">–</span>'}</td>
+    <td><input type="checkbox" data-c="enabled" ${c.enabled?'checked':''}></td>
+    <td><button class="small danger" data-del="${i}">entfernen</button></td></tr>`).join('')}</tbody></table>`:'<p class="mute">Keine Konsole eingerichtet.</p>'}
+function readSetCons(){document.querySelectorAll('#scons tr[data-i]').forEach(tr=>{const c=setCons[+tr.dataset.i];tr.querySelectorAll('[data-c]').forEach(i=>c[i.dataset.c]=i.type==='checkbox'?i.checked:i.value)})}
+$('#scons').onclick=e=>{const d=e.target.dataset.del;if(d==null)return;readSetCons();setCons.splice(+d,1);renderSetCons()};
+$('#sadd4').onclick=()=>{readSetCons();setCons.push({type:'ps4',install:'pkg',name:`PS4 ${conAll().filter(c=>c.type==='ps4').length+setCons.filter(c=>c.type==='ps4'&&!c.id).length+1}`,host:'',port:2121,enabled:true});renderSetCons()};
+$('#sadd3').onclick=()=>{readSetCons();setCons.push({type:'ps3',name:`PS3 ${conAll().filter(c=>c.type==='ps3').length+setCons.filter(c=>c.type==='ps3'&&!c.id).length+1}`,host:'',port:21,enabled:true});renderSetCons()};
+$('#setbtn').onclick=async()=>{const s=await api('/api/settings');
+  setCons=s.consoles.map(({id,type,name,host,port,enabled,install})=>({id,type,name,host,port,enabled,install}));renderSetCons();$('#serr').textContent='';
+  $('#sdcrf').value=s.disc_crf==null?'':String(s.disc_crf);$('#sadrs').value=s.adrs||'full';
+  document.querySelectorAll('[data-path]').forEach(i=>i.value=s.paths[i.dataset.path]||'');
+  $('#spkg').textContent='PS4-Pakete liegen jetzt in '+s.paths.pkg_root+'. Laufwerk C: ist fast voll – z. B. D:/SingStar/Pakete wählen.';
+  $('#slang').value=s.lang||'de';$('#sun').value=s.usdb_user;$('#s3keep').checked=s.ps3_keep;$('#s3dir').value=s.ps3_dir;
+  $('#s3use').textContent=`Gespeichert: ${s.ps3_usage.songs} Songs, ${gb(s.ps3_usage.bytes)}`;$('#sup').value='';$('#sup').placeholder=s.usdb_pass_set?'gespeichert – leer lassen = unverändert':'Passwort';settings.showModal()};
+$('#ssave').onclick=async()=>{readSetCons();const r=await api('/api/settings',{method:'POST',body:{consoles:setCons,disc_crf:$('#sdcrf').value,adrs:$('#sadrs').value,usdb_user:$('#sun').value,usdb_pass:$('#sup').value,ps3_keep:$('#s3keep').checked,ps3_dir:$('#s3dir').value,
+   lang:$('#slang').value,paths:Object.fromEntries([...document.querySelectorAll('[data-path]')].map(i=>[i.dataset.path,i.value])),move_pkgs:$('#smove').checked}});
+  if(r.ok===false){$('#serr').textContent=r.error;return}
+  settings.close();if(r.job)watch(r.job);
+  if($('#slang').value!==LANG){try{localStorage.setItem('ssm-lang',$('#slang').value)}catch(e){}location.reload();return}
+  load()};
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDetail()});
+let lastStatus='';
+setInterval(async()=>{const d=await api('/api/status',{timeout:8000});if(d.ok===false)return;
+  const k=JSON.stringify([d.online,d.times,d.built,d.user]);if(lastStatus&&k!==lastStatus)load();lastStatus=k},5000);
+const hdr=document.querySelector('header');
+startI18n();
+api('/api/settings').then(st=>{if(st.lang&&st.lang!==LANG){try{localStorage.setItem('ssm-lang',st.lang)}catch(e){}location.reload()}});
+new ResizeObserver(()=>document.documentElement.style.setProperty('--hdr',hdr.offsetHeight+'px')).observe(hdr);
+load();
+</script>
+</body>
+</html>
