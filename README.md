@@ -1,5 +1,7 @@
 # StarDex
 
+[English](README.en.md) · **Deutsch**
+
 Eigene Songs in **SingStar auf PS3 und PS4** – plus eine Song-Verwaltung, die die ganze Sammlung am PC
 zusammenführt.
 

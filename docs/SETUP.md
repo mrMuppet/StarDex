@@ -1,5 +1,7 @@
 # Einrichtung
 
+[English](SETUP.en.md) · **Deutsch**
+
 ## In drei Schritten
 
 1. **Installieren:**
