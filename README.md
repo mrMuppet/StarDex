@@ -9,7 +9,7 @@ StarDex wandelt Songs aus **UltraStar**, der **PS3-SingStar-Bibliothek** sowie *
 Songformat von SingStar PS3 oder PS4 um und überträgt sie auf die Konsolen. Die Songs erscheinen danach wie
 offizielle Songs – mit Text, Tonhöhenlinien, Wertung, Video, Cover, Vorschau und Refrain.
 
-> **Empfehlung: PS3.** SingStar läuft auf der PS3 flüssiger. Die PS3-Fassung braucht außerdem weniger
+> **Empfehlung: PS3.** SingStar hat auf der PS3 weniger Verzögerung als auf der PS4. Die PS3-Fassung braucht außerdem weniger
 > Aufwand: lose Dateien per FTP statt Pakete, kein GoldHEN-Patch, keine Label-Regeln.
 
 > Das Repository enthält **nur Werkzeuge** – keine Songs, keine Pakete und keine Sony-Dateien.

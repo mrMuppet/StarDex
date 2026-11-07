@@ -20,7 +20,7 @@ Danach Songs auswählen und „Auf PS3 übertragen“ bzw. „PS4-Pakete bauen�
 ## Konsolen vorbereiten
 
 Mindestens eine der beiden Konsolen wird gebraucht; der Manager kann beide gleichzeitig verwalten.
-Empfohlen ist die PS3 (SingStar läuft dort flüssiger, Übertragung ohne Pakete und Patches).
+Empfohlen ist die PS3 (SingStar hat dort weniger Verzögerung, Übertragung ohne Pakete und Patches).
 
 ### PS3
 

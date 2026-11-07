@@ -20,7 +20,7 @@ Then select songs and use “Transfer to PS3” or “Build PS4 packages” and 
 ## Preparing the consoles
 
 At least one of the two consoles is needed; the manager can handle both at the same time.
-The PS3 is recommended (SingStar runs more smoothly there, transfer without packages and patches).
+The PS3 is recommended (SingStar has less delay there, transfer without packages and patches).
 
 ### PS3
 
